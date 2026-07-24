@@ -28,7 +28,7 @@ class SignUpLoginScreen extends StatelessWidget {
           right: 0,
           bottom: 0,
           child: SocialAuthWidget(
-            onSignedIn: () => context.go(AppRoutes.homeScreen),
+            onSignedIn: () => context.go(AppRoutes.roleSelectionScreen),
           ),
         ),
       ],
@@ -47,7 +47,7 @@ class SignUpLoginScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 SocialAuthWidget(
-                  onSignedIn: () => context.go(AppRoutes.homeScreen),
+                  onSignedIn: () => context.go(AppRoutes.roleSelectionScreen),
                 ),
               ],
             ),

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../theme/app_theme.dart';
 import '../../routes/app_routes.dart';
+import '../../services/notification_service.dart';
 
 class OrderConfirmationScreen extends StatefulWidget {
   final Map<String, dynamic>? orderData;
@@ -76,6 +77,35 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen>
     _checkController.forward().then((_) {
       _contentController.forward();
     });
+
+    // Send real-time notifications after booking confirmed
+    _sendBookingNotifications();
+  }
+
+  void _sendBookingNotifications() {
+    final service = NotificationService.instance;
+    final bookingId = _order['bookingId'] as String? ?? 'FIQ-UNKNOWN';
+    final serviceName = _order['service'] as String? ?? 'Home Service';
+    final address = _order['address'] as String? ?? 'Your location';
+    final amount = (_order['totalAmount'] as num?)?.toInt() ?? 0;
+
+    // Notify homeowner: booking confirmed
+    service.notifyHomeownerStatusUpdate(
+      homeownerId: 'demo-homeowner-001',
+      status: 'accepted',
+      service: serviceName,
+      bookingId: bookingId,
+      technicianName: _order['technician'] as String? ?? 'Your technician',
+    );
+
+    // Notify technician: new job alert
+    service.notifyTechnicianNewJob(
+      technicianId: 'demo-technician-001',
+      service: serviceName,
+      address: address,
+      bookingId: bookingId,
+      amount: amount,
+    );
   }
 
   @override

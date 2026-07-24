@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../services/notification_service.dart';
 import './widgets/job_queue_card_widget.dart';
 import './widgets/active_job_map_widget.dart';
 
@@ -22,6 +23,8 @@ class _TechnicianJobQueueScreenState extends State<TechnicianJobQueueScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    // Start listening for new job notifications for this technician
+    NotificationService.instance.startListening('demo-technician-001');
   }
 
   @override
@@ -37,6 +40,16 @@ class _TechnicianJobQueueScreenState extends State<TechnicianJobQueueScreen>
       _expandedJobIndex = -1;
       _tabController.animateTo(0);
     });
+
+    // Notify homeowner that technician accepted
+    NotificationService.instance.notifyHomeownerStatusUpdate(
+      homeownerId: 'demo-homeowner-001',
+      status: 'accepted',
+      service: job['service'] as String? ?? 'Home Service',
+      bookingId: job['id'] as String? ?? '',
+      technicianName: 'Arjun Mehta',
+    );
+
     _showSnackBar(
       'Job accepted! Navigate to customer location.',
       AppTheme.success,
@@ -52,9 +65,22 @@ class _TechnicianJobQueueScreenState extends State<TechnicianJobQueueScreen>
   }
 
   void _completeJob() {
+    final completedJob = _activeJob;
     setState(() {
       _activeJob = null;
     });
+
+    // Notify homeowner that job is completed
+    if (completedJob != null) {
+      NotificationService.instance.notifyHomeownerStatusUpdate(
+        homeownerId: 'demo-homeowner-001',
+        status: 'completed',
+        service: completedJob['service'] as String? ?? 'Home Service',
+        bookingId: completedJob['id'] as String? ?? '',
+        technicianName: 'Arjun Mehta',
+      );
+    }
+
     _showSnackBar('Job marked complete! Great work! 🎉', AppTheme.primary);
   }
 

@@ -202,7 +202,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   avatarUrl:
                       'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg',
                   onSearchTap: () {},
-                  onNotificationTap: () {},
+                  onNotificationTap: () {
+                    context.push(AppRoutes.notificationsScreen);
+                  },
                   scrollOffset: _scrollOffset,
                 ),
               ),
@@ -248,6 +250,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             animation: _pulseAnim,
                             builder: (context, child) =>
                                 _LiveStatusBanner(pulseValue: _pulseAnim.value),
+                          ),
+                        ),
+                      ),
+
+                      // AI Diagnosis banner
+                      SliverToBoxAdapter(
+                        child: FadeTransition(
+                          opacity: _fadeIn,
+                          child: SlideTransition(
+                            position: _slideUp,
+                            child: _AiDiagnosisBanner(
+                              onTap: () =>
+                                  context.push(AppRoutes.aiDiagnosisScreen),
+                            ),
                           ),
                         ),
                       ),
@@ -668,6 +684,94 @@ class _LiveStatusBanner extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── AI Diagnosis Banner ──────────────────────────────────────────────────────
+class _AiDiagnosisBanner extends StatelessWidget {
+  final VoidCallback onTap;
+  const _AiDiagnosisBanner({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF00C896), Color(0xFF00A8FF)],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF00C896).withAlpha(60),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Colors.white.withAlpha(30),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.psychology_rounded,
+                  color: Colors.white,
+                  size: 26,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'AI Instant Diagnosis',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Describe your issue → get price estimate',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 12,
+                        color: Colors.white.withAlpha(200),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Colors.white.withAlpha(30),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.arrow_forward_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

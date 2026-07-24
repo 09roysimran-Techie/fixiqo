@@ -61,7 +61,7 @@ class _AppNavigationState extends State<AppNavigation> {
       icon: Icons.person_outline_rounded,
       activeIcon: Icons.person_rounded,
       label: 'Profile',
-      branchIndex: null,
+      branchIndex: 2,
     ),
   ];
 

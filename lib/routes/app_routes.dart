@@ -10,7 +10,12 @@ import '../presentation/booking_confirmation_screen/booking_confirmation_screen.
 import '../presentation/order_confirmation_screen/order_confirmation_screen.dart';
 import '../presentation/splash_screen/splash_screen.dart';
 import '../presentation/pre_checkout_screen/pre_checkout_screen.dart';
+import '../presentation/homeowner_profile_screen/homeowner_profile_screen.dart';
 import '../widgets/app_scaffold.dart';
+import '../presentation/notifications_screen/notifications_screen.dart';
+import '../presentation/ai_diagnosis_screen/ai_diagnosis_screen.dart';
+import '../presentation/role_selection_screen/role_selection_screen.dart';
+import '../presentation/partner_dashboard_screen/partner_dashboard_screen.dart';
 
 class AppRoutes {
   static const String initial = '/';
@@ -24,6 +29,11 @@ class AppRoutes {
   static const String bookingConfirmationScreen =
       '/booking-confirmation-screen';
   static const String orderConfirmationScreen = '/order-confirmation-screen';
+  static const String homeownerProfileScreen = '/homeowner-profile-screen';
+  static const String notificationsScreen = '/notifications-screen';
+  static const String aiDiagnosisScreen = '/ai-diagnosis-screen';
+  static const String roleSelectionScreen = '/role-selection-screen';
+  static const String partnerDashboardScreen = '/partner-dashboard-screen';
 }
 
 final GoRouter appRouter = GoRouter(
@@ -95,6 +105,15 @@ final GoRouter appRouter = GoRouter(
               path: AppRoutes.technicianJobQueueScreen,
               pageBuilder: (context, state) =>
                   const NoTransitionPage(child: TechnicianJobQueueScreen()),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.homeownerProfileScreen,
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: HomeownerProfileScreen()),
             ),
           ],
         ),
@@ -256,6 +275,122 @@ final GoRouter appRouter = GoRouter(
           transitionDuration: const Duration(milliseconds: 280),
         );
       },
+    ),
+    GoRoute(
+      path: AppRoutes.notificationsScreen,
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const NotificationsScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            ),
+            child: SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 0.04),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+              child: child,
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 280),
+      ),
+    ),
+    GoRoute(
+      path: AppRoutes.aiDiagnosisScreen,
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const AiDiagnosisScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            ),
+            child: SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 0.04),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+              child: child,
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 280),
+      ),
+    ),
+    GoRoute(
+      path: AppRoutes.roleSelectionScreen,
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const RoleSelectionScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            ),
+            child: SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 0.04),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+              child: child,
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 280),
+      ),
+    ),
+    GoRoute(
+      path: AppRoutes.partnerDashboardScreen,
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const PartnerDashboardScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            ),
+            child: SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0.04, 0),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+              child: child,
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 280),
+      ),
     ),
   ],
 );
