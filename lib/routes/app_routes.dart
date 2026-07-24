@@ -9,6 +9,7 @@ import '../presentation/payment_screen/payment_screen.dart';
 import '../presentation/booking_confirmation_screen/booking_confirmation_screen.dart';
 import '../presentation/order_confirmation_screen/order_confirmation_screen.dart';
 import '../presentation/splash_screen/splash_screen.dart';
+import '../presentation/pre_checkout_screen/pre_checkout_screen.dart';
 import '../widgets/app_scaffold.dart';
 
 class AppRoutes {
@@ -18,6 +19,7 @@ class AppRoutes {
   static const String signUpLoginScreen = '/sign-up-login-screen';
   static const String liveTrackingScreen = '/live-tracking-screen';
   static const String technicianJobQueueScreen = '/technician-job-queue-screen';
+  static const String preCheckoutScreen = '/pre-checkout-screen';
   static const String paymentScreen = '/payment-screen';
   static const String bookingConfirmationScreen =
       '/booking-confirmation-screen';
@@ -126,6 +128,38 @@ final GoRouter appRouter = GoRouter(
         },
         transitionDuration: const Duration(milliseconds: 280),
       ),
+    ),
+    GoRoute(
+      path: AppRoutes.preCheckoutScreen,
+      pageBuilder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: PreCheckoutScreen(bookingData: extra),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+              ),
+              child: SlideTransition(
+                position:
+                    Tween<Offset>(
+                      begin: const Offset(0, 0.04),
+                      end: Offset.zero,
+                    ).animate(
+                      CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeOutCubic,
+                      ),
+                    ),
+                child: child,
+              ),
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 280),
+        );
+      },
     ),
     GoRoute(
       path: AppRoutes.paymentScreen,

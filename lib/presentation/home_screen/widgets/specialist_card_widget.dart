@@ -1,3 +1,5 @@
+import 'package:google_fonts/google_fonts.dart';
+
 import '../../../core/app_export.dart';
 
 class SpecialistCardWidget extends StatefulWidget {
@@ -49,55 +51,90 @@ class _SpecialistCardWidgetState extends State<SpecialistCardWidget>
         onTapUp: (_) => _pressController.forward(),
         onTapCancel: () => _pressController.forward(),
         child: Container(
-          width: 185,
+          width: 190,
           decoration: BoxDecoration(
-            color: AppTheme.surfaceLight,
-            borderRadius: BorderRadius.circular(20),
+            color: const Color(0xFF0F1C2E),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: Colors.white.withAlpha(18), width: 1),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withAlpha(18),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
+                color: Colors.black.withAlpha(60),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+              BoxShadow(
+                color: const Color(0xFF00C896).withAlpha(12),
+                blurRadius: 30,
+                offset: const Offset(0, 0),
               ),
             ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image top — full width, locked anatomy
+              // Image section
               Stack(
                 children: [
                   ClipRRect(
                     borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
+                      topLeft: Radius.circular(22),
+                      topRight: Radius.circular(22),
                     ),
-                    child: CustomImageWidget(
-                      imageUrl: s['imageUrl'] as String,
-                      width: double.infinity,
-                      height: 140,
-                      fit: BoxFit.cover,
-                      semanticLabel: s['semanticLabel'] as String,
+                    child: Stack(
+                      children: [
+                        CustomImageWidget(
+                          imageUrl: s['imageUrl'] as String,
+                          width: double.infinity,
+                          height: 148,
+                          fit: BoxFit.cover,
+                          semanticLabel: s['semanticLabel'] as String,
+                        ),
+                        // Gradient overlay on image
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: 60,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  const Color(0xFF0F1C2E).withAlpha(200),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  // Badge top-left
+                  // Badge
                   if (badge != null)
                     Positioned(
                       top: 10,
                       left: 10,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
+                          horizontal: 9,
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: AppTheme.primary,
+                          color: const Color(0xFFFF6B35),
                           borderRadius: BorderRadius.circular(100),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFF6B35).withAlpha(80),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: Text(
                           badge,
-                          style: const TextStyle(
-                            fontFamily: 'DM Sans',
+                          style: GoogleFonts.dmSans(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             color: Colors.white,
@@ -105,17 +142,46 @@ class _SpecialistCardWidgetState extends State<SpecialistCardWidget>
                         ),
                       ),
                     ),
-                  // Availability dot
+                  // ETA chip top-right
                   Positioned(
                     top: 10,
                     right: 10,
                     child: Container(
-                      width: 10,
-                      height: 10,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: available ? AppTheme.success : AppTheme.warning,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 1.5),
+                        color: Colors.black.withAlpha(140),
+                        borderRadius: BorderRadius.circular(100),
+                        border: Border.all(
+                          color: Colors.white.withAlpha(30),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: available
+                                  ? const Color(0xFF00C896)
+                                  : Colors.white.withAlpha(80),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            available ? s['eta'] as String : 'Busy',
+                            style: GoogleFonts.dmSans(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -124,96 +190,114 @@ class _SpecialistCardWidgetState extends State<SpecialistCardWidget>
 
               // Info section
               Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Name
+                    // Name + specialty
                     Text(
                       s['name'] as String,
-                      style: const TextStyle(
-                        fontFamily: 'DM Sans',
-                        fontSize: 14,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: AppTheme.secondary,
+                        color: Colors.white,
+                        letterSpacing: -0.2,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
-                    // Specialty
-                    Text(
-                      s['specialty'] as String,
-                      style: const TextStyle(
-                        fontFamily: 'DM Sans',
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                        color: Color(0xFF64748B),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    // Rating row
                     Row(
                       children: [
-                        Icon(
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: const Color(0xFF00C896).withAlpha(180),
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          s['specialty'] as String,
+                          style: GoogleFonts.dmSans(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF00C896).withAlpha(200),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    // Rating + distance row
+                    Row(
+                      children: [
+                        const Icon(
                           Icons.star_rounded,
                           size: 13,
-                          color: AppTheme.warning,
+                          color: Color(0xFFFBBF24),
                         ),
                         const SizedBox(width: 3),
                         Text(
                           '${s['rating']}',
-                          style: const TextStyle(
-                            fontFamily: 'DM Sans',
+                          style: GoogleFonts.dmSans(
                             fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.secondary,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
                           ),
                         ),
                         const SizedBox(width: 4),
                         Text(
                           '(${s['reviews']})',
-                          style: const TextStyle(
-                            fontFamily: 'DM Sans',
+                          style: GoogleFonts.dmSans(
                             fontSize: 11,
-                            color: Color(0xFF94A3B8),
+                            color: Colors.white.withAlpha(90),
                           ),
                         ),
                         const Spacer(),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.access_time_rounded,
-                              size: 11,
-                              color: AppTheme.primary,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              s['eta'] as String,
-                              style: TextStyle(
-                                fontFamily: 'DM Sans',
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: AppTheme.primary,
-                              ),
-                            ),
-                          ],
+                        Icon(
+                          Icons.location_on_rounded,
+                          size: 11,
+                          color: Colors.white.withAlpha(80),
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          s['distance'] as String,
+                          style: GoogleFonts.dmSans(
+                            fontSize: 11,
+                            color: Colors.white.withAlpha(90),
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    // Price + Book Now
+                    const SizedBox(height: 12),
+                    // Divider
+                    Container(height: 1, color: Colors.white.withAlpha(14)),
+                    const SizedBox(height: 12),
+                    // Price + Book
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          '\$${s['price']}',
-                          style: const TextStyle(
-                            fontFamily: 'DM Sans',
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.secondary,
-                            fontFeatures: [FontFeature.tabularFigures()],
-                          ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '₹${s['price']}',
+                              style: GoogleFonts.dmSans(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                            Text(
+                              'starting',
+                              style: GoogleFonts.dmSans(
+                                fontSize: 9,
+                                color: Colors.white.withAlpha(80),
+                              ),
+                            ),
+                          ],
                         ),
                         const Spacer(),
                         GestureDetector(
@@ -221,24 +305,42 @@ class _SpecialistCardWidgetState extends State<SpecialistCardWidget>
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 8,
+                              horizontal: 16,
+                              vertical: 9,
                             ),
                             decoration: BoxDecoration(
+                              gradient: available
+                                  ? const LinearGradient(
+                                      colors: [
+                                        Color(0xFF00C896),
+                                        Color(0xFF00A87A),
+                                      ],
+                                    )
+                                  : null,
                               color: available
-                                  ? AppTheme.primary
-                                  : const Color(0xFFE2E8F0),
-                              borderRadius: BorderRadius.circular(100),
+                                  ? null
+                                  : Colors.white.withAlpha(14),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: available
+                                  ? [
+                                      BoxShadow(
+                                        color: const Color(
+                                          0xFF00C896,
+                                        ).withAlpha(70),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ]
+                                  : null,
                             ),
                             child: Text(
                               available ? 'Book Now' : 'Busy',
-                              style: TextStyle(
-                                fontFamily: 'DM Sans',
+                              style: GoogleFonts.dmSans(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
                                 color: available
                                     ? Colors.white
-                                    : const Color(0xFF94A3B8),
+                                    : Colors.white.withAlpha(70),
                               ),
                             ),
                           ),

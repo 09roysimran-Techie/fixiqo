@@ -21,7 +21,6 @@ class _TrackingMapWidgetState extends State<TrackingMapWidget>
   late Animation<double> _bounceAnim;
   late Animation<double> _rippleAnim;
 
-  // Simulated technician position (normalized 0.0–1.0 within the map area)
   final double _techX = 0.35;
   final double _techY = 0.55;
 
@@ -72,17 +71,37 @@ class _TrackingMapWidgetState extends State<TrackingMapWidget>
             ),
           ),
 
-          // Green tint overlay
+          // Dark cinematic overlay — top fade
           Positioned.fill(
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    AppTheme.primary.withAlpha(20),
+                    Color(0xCC080E1A),
+                    Color(0x44080E1A),
+                    Color(0xDD080E1A),
+                  ],
+                  stops: [0.0, 0.45, 1.0],
+                ),
+              ),
+            ),
+          ),
+
+          // Teal ambient glow on map
+          Positioned(
+            left: -30,
+            top: 20,
+            child: Container(
+              width: 180,
+              height: 180,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFF00C896).withAlpha(38),
                     Colors.transparent,
-                    Colors.black.withAlpha(38),
                   ],
                 ),
               ),
@@ -107,29 +126,48 @@ class _TrackingMapWidgetState extends State<TrackingMapWidget>
                         constraints.maxHeight * _techY + _bounceAnim.value;
                     return Stack(
                       children: [
-                        // Ripple ring
+                        // Outer ripple ring
                         Positioned(
-                          left: x - 24,
-                          top: y - 24,
+                          left: x - 30,
+                          top: y - 30,
                           child: AnimatedBuilder(
                             animation: _rippleAnim,
                             builder: (context, _) {
                               return Container(
-                                width: 48,
-                                height: 48,
+                                width: 60,
+                                height: 60,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: AppTheme.primary.withOpacity(
-                                      (1 - _rippleAnim.value).clamp(0.0, 1.0),
+                                    color: const Color(0xFF00C896).withOpacity(
+                                      (1 - _rippleAnim.value).clamp(0.0, 0.6),
                                     ),
-                                    width: 2,
+                                    width: 1.5,
                                   ),
                                 ),
                                 transform: Matrix4.identity()
-                                  ..scale(0.5 + _rippleAnim.value * 0.8),
+                                  ..scale(0.4 + _rippleAnim.value * 0.9),
                               );
                             },
+                          ),
+                        ),
+                        // Glow halo
+                        Positioned(
+                          left: x - 22,
+                          top: y - 22,
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF00C896).withAlpha(128),
+                                  blurRadius: 20,
+                                  spreadRadius: 4,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                         // Technician marker
@@ -140,13 +178,20 @@ class _TrackingMapWidgetState extends State<TrackingMapWidget>
                             width: 44,
                             height: 44,
                             decoration: BoxDecoration(
-                              color: AppTheme.primary,
+                              gradient: const LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [Color(0xFF00C896), Color(0xFF009B74)],
+                              ),
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 3),
+                              border: Border.all(
+                                color: Colors.white.withAlpha(230),
+                                width: 2.5,
+                              ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppTheme.primary.withAlpha(102),
-                                  blurRadius: 12,
+                                  color: const Color(0xFF00C896).withAlpha(153),
+                                  blurRadius: 14,
                                   offset: const Offset(0, 4),
                                 ),
                               ],
@@ -166,19 +211,27 @@ class _TrackingMapWidgetState extends State<TrackingMapWidget>
             ),
           ),
 
-          // Map attribution
+          // Map attribution — dark styled
           Positioned(
             bottom: 8,
             right: 8,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.white.withAlpha(217),
+                color: const Color(0xFF0D1B2A).withAlpha(217),
                 borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: const Color(0xFF00C896).withAlpha(51),
+                  width: 0.5,
+                ),
               ),
               child: const Text(
                 '© Fixiqo Maps',
-                style: TextStyle(fontSize: 9, color: Color(0xFF64748B)),
+                style: TextStyle(
+                  fontSize: 9,
+                  color: Color(0xFF64A89A),
+                  fontFamily: 'DM Sans',
+                ),
               ),
             ),
           ),
@@ -198,25 +251,29 @@ class _HomePinMarker extends StatelessWidget {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: AppTheme.secondary,
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFFFF6B35), Color(0xFFE85520)],
+            ),
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 3),
+            border: Border.all(color: Colors.white.withAlpha(230), width: 2.5),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withAlpha(51),
-                blurRadius: 10,
+                color: const Color(0xFFFF6B35).withAlpha(140),
+                blurRadius: 16,
                 offset: const Offset(0, 4),
               ),
             ],
           ),
           child: const Icon(Icons.home_rounded, color: Colors.white, size: 22),
         ),
-        Container(width: 2, height: 12, color: AppTheme.secondary),
+        Container(width: 2, height: 12, color: const Color(0xFFFF6B35)),
         Container(
           width: 8,
           height: 8,
-          decoration: BoxDecoration(
-            color: AppTheme.secondary,
+          decoration: const BoxDecoration(
+            color: Color(0xFFFF6B35),
             shape: BoxShape.circle,
           ),
         ),
@@ -229,7 +286,7 @@ class _RoutePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppTheme.primary.withAlpha(179)
+      ..color = const Color(0xFF00C896).withAlpha(179)
       ..strokeWidth = 3.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -245,9 +302,8 @@ class _RoutePainter extends CustomPainter {
       size.height * 0.30,
     );
 
-    // Dashed path effect
     final dashPaint = Paint()
-      ..color = AppTheme.primary.withAlpha(128)
+      ..color = const Color(0xFF00C896).withAlpha(77)
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
 

@@ -1,3 +1,5 @@
+import 'package:google_fonts/google_fonts.dart';
+
 import '../../../core/app_export.dart';
 
 class HomeAppBarWidget extends StatelessWidget {
@@ -6,6 +8,7 @@ class HomeAppBarWidget extends StatelessWidget {
   final String avatarUrl;
   final VoidCallback onSearchTap;
   final VoidCallback onNotificationTap;
+  final double scrollOffset;
 
   const HomeAppBarWidget({
     required this.greeting,
@@ -13,18 +16,25 @@ class HomeAppBarWidget extends StatelessWidget {
     required this.avatarUrl,
     required this.onSearchTap,
     required this.onNotificationTap,
+    this.scrollOffset = 0,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
+    final blurAmount = (scrollOffset / 60).clamp(0.0, 1.0);
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 12, 16, 12),
+      padding: const EdgeInsets.fromLTRB(20, 10, 16, 10),
       decoration: BoxDecoration(
-        color: AppTheme.backgroundLight,
+        color: Color.lerp(
+          Colors.transparent,
+          const Color(0xFF080E1A).withAlpha(220),
+          blurAmount,
+        ),
         border: Border(
           bottom: BorderSide(
-            color: AppTheme.outlineLight.withAlpha(128),
+            color: Colors.white.withAlpha((blurAmount * 18).toInt()),
             width: 1,
           ),
         ),
@@ -33,17 +43,27 @@ class HomeAppBarWidget extends StatelessWidget {
         children: [
           // Avatar
           Container(
-            width: 44,
-            height: 44,
+            width: 42,
+            height: 42,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: AppTheme.primary, width: 2),
+              border: Border.all(
+                color: const Color(0xFF00C896).withAlpha(160),
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF00C896).withAlpha(50),
+                  blurRadius: 10,
+                  spreadRadius: 0,
+                ),
+              ],
             ),
             child: ClipOval(
               child: CustomImageWidget(
                 imageUrl: avatarUrl,
-                width: 44,
-                height: 44,
+                width: 42,
+                height: 42,
                 fit: BoxFit.cover,
                 semanticLabel: 'Profile photo of $userName',
               ),
@@ -51,55 +71,89 @@ class HomeAppBarWidget extends StatelessWidget {
           ),
           const SizedBox(width: 12),
 
-          // Greeting + name
+          // Greeting
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   greeting,
-                  style: const TextStyle(
-                    fontFamily: 'DM Sans',
-                    fontSize: 12,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 11,
                     fontWeight: FontWeight.w400,
-                    color: Color(0xFF64748B),
+                    color: Colors.white.withAlpha(120),
                   ),
                 ),
                 Text(
                   userName,
-                  style: const TextStyle(
-                    fontFamily: 'DM Sans',
+                  style: GoogleFonts.dmSans(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.secondary,
+                    color: Colors.white,
+                    letterSpacing: -0.2,
                   ),
                 ),
               ],
             ),
           ),
 
-          // Search button
-          _IconActionButton(icon: Icons.search_rounded, onTap: onSearchTap),
+          // Location chip
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(10),
+              borderRadius: BorderRadius.circular(100),
+              border: Border.all(color: Colors.white.withAlpha(18), width: 1),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.location_on_rounded,
+                  size: 12,
+                  color: const Color(0xFF00C896),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  'Mumbai',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white.withAlpha(200),
+                  ),
+                ),
+                const SizedBox(width: 3),
+                Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 14,
+                  color: Colors.white.withAlpha(120),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(width: 8),
 
-          // Notification button with badge
+          // Notification button
           Stack(
             clipBehavior: Clip.none,
             children: [
-              _IconActionButton(
+              _IconBtn(
                 icon: Icons.notifications_none_rounded,
                 onTap: onNotificationTap,
               ),
               Positioned(
-                top: 4,
-                right: 4,
+                top: 6,
+                right: 6,
                 child: Container(
-                  width: 9,
-                  height: 9,
+                  width: 8,
+                  height: 8,
                   decoration: BoxDecoration(
-                    color: AppTheme.error,
+                    color: const Color(0xFFFF6B35),
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1.5),
+                    border: Border.all(
+                      color: const Color(0xFF080E1A),
+                      width: 1.5,
+                    ),
                   ),
                 ),
               ),
@@ -111,33 +165,26 @@ class HomeAppBarWidget extends StatelessWidget {
   }
 }
 
-class _IconActionButton extends StatelessWidget {
+class _IconBtn extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
 
-  const _IconActionButton({required this.icon, required this.onTap});
+  const _IconBtn({required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(100),
-      splashColor: AppTheme.primary.withAlpha(31),
       child: Container(
-        width: 42,
-        height: 42,
+        width: 40,
+        height: 40,
         decoration: BoxDecoration(
-          color: AppTheme.surfaceLight,
+          color: Colors.white.withAlpha(10),
           shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(15),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          border: Border.all(color: Colors.white.withAlpha(18), width: 1),
         ),
-        child: Icon(icon, size: 20, color: AppTheme.secondary),
+        child: Icon(icon, size: 19, color: Colors.white.withAlpha(200)),
       ),
     );
   }

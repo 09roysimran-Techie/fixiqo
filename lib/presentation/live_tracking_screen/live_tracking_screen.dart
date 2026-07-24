@@ -1,15 +1,12 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../theme/app_theme.dart';
 import './widgets/booking_summary_widget.dart';
 import './widgets/job_status_timeline_widget.dart';
 import './widgets/technician_info_card_widget.dart';
 import './widgets/tracking_action_buttons_widget.dart';
 import './widgets/tracking_map_widget.dart';
-
-// TODO: Replace with Riverpod/Bloc for production state management
-// TODO: Replace mock location data with real-time GPS stream
 
 class LiveTrackingScreen extends StatefulWidget {
   const LiveTrackingScreen({super.key});
@@ -24,7 +21,6 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
   late Animation<Offset> _panelSlide;
   late Animation<double> _panelOpacity;
 
-  // Mock booking data
   final Map<String, dynamic> _booking = {
     'id': 'FXQ-20240723-4892',
     'service': 'Electrical Repair',
@@ -33,8 +29,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
     'price': 499,
     'eta': 14,
     'distance': '1.8 km',
-    'currentStatus':
-        2, // 0=searching,1=assigned,2=enRoute,3=arrived,4=inProgress,5=completed
+    'currentStatus': 2,
     'technician': {
       'name': 'Rahim Uddin',
       'specialty': 'Master Electrician',
@@ -55,7 +50,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
     super.initState();
     _entranceController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 600),
     );
     _panelSlide = Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero)
         .animate(
@@ -86,7 +81,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: const Color(0xFF080E1A),
       body: isTablet
           ? _buildTabletLayout(context, bottomPadding)
           : _buildPhoneLayout(context, size, bottomPadding),
@@ -100,6 +95,61 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
   ) {
     return Stack(
       children: [
+        // Dark gradient background
+        Positioned.fill(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF080E1A),
+                  Color(0xFF0D1B2A),
+                  Color(0xFF0A1628),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // Ambient teal glow top-left
+        Positioned(
+          top: -60,
+          left: -60,
+          child: Container(
+            width: 220,
+            height: 220,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  const Color(0xFF00C896).withAlpha(46),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // Ambient orange glow top-right
+        Positioned(
+          top: 40,
+          right: -40,
+          child: Container(
+            width: 160,
+            height: 160,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  const Color(0xFFFF6B35).withAlpha(31),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+        ),
+
         // Map takes top 45%
         TrackingMapWidget(
           height: size.height * 0.45,
@@ -120,7 +170,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
           child: _EtaBadge(eta: _booking['eta'] as int),
         ),
 
-        // Scrollable bottom panel
+        // Scrollable dark bottom panel
         Positioned(
           top: size.height * 0.42,
           left: 0,
@@ -131,12 +181,25 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
             child: SlideTransition(
               position: _panelSlide,
               child: Container(
-                decoration: const BoxDecoration(
-                  color: AppTheme.backgroundLight,
-                  borderRadius: BorderRadius.only(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0D1B2A),
+                  borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(28),
                     topRight: Radius.circular(28),
                   ),
+                  border: Border(
+                    top: BorderSide(
+                      color: const Color(0xFF00C896).withAlpha(64),
+                      width: 1,
+                    ),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF00C896).withAlpha(20),
+                      blurRadius: 24,
+                      offset: const Offset(0, -4),
+                    ),
+                  ],
                 ),
                 child: SingleChildScrollView(
                   physics: const ClampingScrollPhysics(),
@@ -152,9 +215,36 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                             height: 4,
                             margin: const EdgeInsets.symmetric(vertical: 10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE2E8F0),
+                              color: const Color(0xFF00C896).withAlpha(89),
                               borderRadius: BorderRadius.circular(100),
                             ),
+                          ),
+                        ),
+                        // Live tracking label
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 14),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF00C896),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Text(
+                                'LIVE TRACKING',
+                                style: TextStyle(
+                                  fontFamily: 'DM Sans',
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF00C896),
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         TechnicianInfoCardWidget(
@@ -163,7 +253,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                           eta: _booking['eta'] as int,
                           distance: _booking['distance'] as String,
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
                         TrackingActionButtonsWidget(
                           technicianPhone:
                               (_booking['technician']
@@ -172,11 +262,11 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                           onCall: () {},
                           onChat: () {},
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
                         JobStatusTimelineWidget(
                           currentStatusIndex: _booking['currentStatus'] as int,
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
                         BookingSummaryWidget(booking: _booking),
                       ],
                     ),
@@ -219,20 +309,53 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
         Expanded(
           flex: 45,
           child: Container(
-            color: AppTheme.backgroundLight,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF0D1B2A), Color(0xFF080E1A)],
+              ),
+              border: Border(
+                left: BorderSide(color: Color(0xFF1A2E40), width: 1),
+              ),
+            ),
             child: SafeArea(
               child: SingleChildScrollView(
                 padding: EdgeInsets.fromLTRB(20, 24, 20, bottomPadding + 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF00C896),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'LIVE TRACKING',
+                          style: TextStyle(
+                            fontFamily: 'DM Sans',
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF00C896),
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
                     TechnicianInfoCardWidget(
                       technician:
                           _booking['technician'] as Map<String, dynamic>,
                       eta: _booking['eta'] as int,
                       distance: _booking['distance'] as String,
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                     TrackingActionButtonsWidget(
                       technicianPhone:
                           (_booking['technician']
@@ -241,11 +364,11 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                       onCall: () {},
                       onChat: () {},
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                     JobStatusTimelineWidget(
                       currentStatusIndex: _booking['currentStatus'] as int,
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                     BookingSummaryWidget(booking: _booking),
                   ],
                 ),
@@ -267,24 +390,34 @@ class _BackButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: 42,
-        height: 42,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(31),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(100),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: const Color(0xFF0D1B2A).withAlpha(191),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: const Color(0xFF00C896).withAlpha(77),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(77),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: const Icon(
-          Icons.arrow_back_ios_new_rounded,
-          size: 18,
-          color: AppTheme.secondary,
+            child: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 18,
+              color: Color(0xFFE2E8F0),
+            ),
+          ),
         ),
       ),
     );
@@ -312,7 +445,7 @@ class _EtaBadgeState extends State<_EtaBadge>
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
-    _pulseAnim = Tween<double>(begin: 0.85, end: 1.0).animate(
+    _pulseAnim = Tween<double>(begin: 0.92, end: 1.0).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
   }
@@ -327,35 +460,43 @@ class _EtaBadgeState extends State<_EtaBadge>
   Widget build(BuildContext context) {
     return ScaleTransition(
       scale: _pulseAnim,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: AppTheme.primary,
-          borderRadius: BorderRadius.circular(100),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.primary.withAlpha(102),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.bolt_rounded, color: Colors.white, size: 14),
-            const SizedBox(width: 4),
-            Text(
-              '${widget.eta} min',
-              style: const TextStyle(
-                fontFamily: 'DM Sans',
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-                fontFeatures: [FontFeature.tabularFigures()],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(100),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF00C896), Color(0xFF009B74)],
               ),
+              borderRadius: BorderRadius.circular(100),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF00C896).withAlpha(115),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-          ],
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.bolt_rounded, color: Colors.white, size: 14),
+                const SizedBox(width: 4),
+                Text(
+                  '${widget.eta} min',
+                  style: const TextStyle(
+                    fontFamily: 'DM Sans',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    fontFeatures: [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

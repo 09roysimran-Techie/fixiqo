@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../theme/app_theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ServiceCategoryGridWidget extends StatefulWidget {
   final bool isTablet;
@@ -21,42 +21,50 @@ class _ServiceCategoryGridWidgetState extends State<ServiceCategoryGridWidget>
     {
       'label': 'Cleaning',
       'icon': Icons.cleaning_services_rounded,
-      'color': Color(0xFF3B82F6),
+      'color': Color(0xFF00C896),
+      'bg': Color(0xFF00C896),
     },
     {
       'label': 'Plumbing',
       'icon': Icons.plumbing_rounded,
-      'color': Color(0xFF8B5CF6),
+      'color': Color(0xFF60A5FA),
+      'bg': Color(0xFF60A5FA),
     },
     {
       'label': 'Electrical',
       'icon': Icons.electrical_services_rounded,
-      'color': Color(0xFFF59E0B),
+      'color': Color(0xFFFF6B35),
+      'bg': Color(0xFFFF6B35),
     },
     {
       'label': 'AC Repair',
       'icon': Icons.ac_unit_rounded,
-      'color': Color(0xFF06B6D4),
+      'color': Color(0xFF818CF8),
+      'bg': Color(0xFF818CF8),
     },
     {
       'label': 'Painting',
       'icon': Icons.format_paint_rounded,
-      'color': Color(0xFFEC4899),
+      'color': Color(0xFFF472B6),
+      'bg': Color(0xFFF472B6),
     },
     {
       'label': 'Repair',
       'icon': Icons.construction_rounded,
-      'color': Color(0xFFEF4444),
+      'color': Color(0xFFFBBF24),
+      'bg': Color(0xFFFBBF24),
     },
     {
       'label': 'Bathroom',
       'icon': Icons.bathtub_rounded,
-      'color': Color(0xFF10B981),
+      'color': Color(0xFF34D399),
+      'bg': Color(0xFF34D399),
     },
     {
       'label': 'More',
       'icon': Icons.grid_view_rounded,
-      'color': Color(0xFF64748B),
+      'color': Color(0xFF94A3B8),
+      'bg': Color(0xFF94A3B8),
     },
   ];
 
@@ -65,12 +73,12 @@ class _ServiceCategoryGridWidgetState extends State<ServiceCategoryGridWidget>
     super.initState();
     _staggerController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 700),
     );
 
     for (int i = 0; i < _categories.length; i++) {
-      final start = (i * 0.08).clamp(0.0, 0.7);
-      final end = (start + 0.4).clamp(0.0, 1.0);
+      final start = (i * 0.07).clamp(0.0, 0.65);
+      final end = (start + 0.45).clamp(0.0, 1.0);
       _itemAnimations.add(
         Tween<double>(begin: 0.0, end: 1.0).animate(
           CurvedAnimation(
@@ -92,54 +100,38 @@ class _ServiceCategoryGridWidgetState extends State<ServiceCategoryGridWidget>
 
   @override
   Widget build(BuildContext context) {
-    final crossAxisCount = widget.isTablet ? 4 : 4;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceLight,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(13),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 4,
+        mainAxisSpacing: 10,
+        crossAxisSpacing: 10,
+        childAspectRatio: 0.82,
+      ),
+      itemCount: _categories.length,
+      itemBuilder: (context, i) {
+        final cat = _categories[i];
+        return AnimatedBuilder(
+          animation: _itemAnimations[i],
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _itemAnimations[i].value,
+              child: Opacity(
+                opacity: _itemAnimations[i].value.clamp(0.0, 1.0),
+                child: child,
+              ),
+            );
+          },
+          child: _CategoryCell(
+            label: cat['label'] as String,
+            icon: cat['icon'] as IconData,
+            accentColor: cat['color'] as Color,
+            isSelected: _selectedIndex == i,
+            onTap: () => setState(() => _selectedIndex = i),
           ),
-        ],
-      ),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: crossAxisCount,
-          mainAxisSpacing: 8,
-          crossAxisSpacing: 4,
-          childAspectRatio: 0.85,
-        ),
-        itemCount: _categories.length,
-        itemBuilder: (context, i) {
-          final cat = _categories[i];
-          return AnimatedBuilder(
-            animation: _itemAnimations[i],
-            builder: (context, child) {
-              return Transform.scale(
-                scale: _itemAnimations[i].value,
-                child: Opacity(
-                  opacity: _itemAnimations[i].value.clamp(0.0, 1.0),
-                  child: child,
-                ),
-              );
-            },
-            child: _CategoryCell(
-              label: cat['label'] as String,
-              icon: cat['icon'] as IconData,
-              accentColor: cat['color'] as Color,
-              isSelected: _selectedIndex == i,
-              onTap: () => setState(() => _selectedIndex = i),
-            ),
-          );
-        },
-      ),
+        );
+      },
     );
   }
 }
@@ -173,7 +165,7 @@ class _CategoryCellState extends State<_CategoryCell>
     _pressController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 100),
-      lowerBound: 0.92,
+      lowerBound: 0.93,
       upperBound: 1.0,
       value: 1.0,
     );
@@ -196,43 +188,53 @@ class _CategoryCellState extends State<_CategoryCell>
       onTapCancel: () => _pressController.forward(),
       child: ScaleTransition(
         scale: _pressController,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: widget.isSelected
-                    ? widget.accentColor
-                    : widget.accentColor.withAlpha(26),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(
-                widget.icon,
-                size: 26,
-                color: widget.isSelected ? Colors.white : widget.accentColor,
-              ),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          decoration: BoxDecoration(
+            color: widget.isSelected
+                ? widget.accentColor.withAlpha(30)
+                : Colors.white.withAlpha(8),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: widget.isSelected
+                  ? widget.accentColor.withAlpha(120)
+                  : Colors.white.withAlpha(16),
+              width: 1,
             ),
-            const SizedBox(height: 6),
-            Text(
-              widget.label,
-              style: TextStyle(
-                fontFamily: 'DM Sans',
-                fontSize: 11,
-                fontWeight: widget.isSelected
-                    ? FontWeight.w600
-                    : FontWeight.w500,
-                color: widget.isSelected
-                    ? AppTheme.secondary
-                    : const Color(0xFF475569),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: widget.isSelected
+                      ? widget.accentColor.withAlpha(50)
+                      : widget.accentColor.withAlpha(22),
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: Icon(widget.icon, size: 22, color: widget.accentColor),
               ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+              const SizedBox(height: 7),
+              Text(
+                widget.label,
+                style: GoogleFonts.dmSans(
+                  fontSize: 11,
+                  fontWeight: widget.isSelected
+                      ? FontWeight.w700
+                      : FontWeight.w500,
+                  color: widget.isSelected
+                      ? Colors.white
+                      : Colors.white.withAlpha(150),
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ),
     );

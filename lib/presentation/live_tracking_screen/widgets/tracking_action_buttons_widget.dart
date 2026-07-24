@@ -1,5 +1,5 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../../theme/app_theme.dart';
 
 class TrackingActionButtonsWidget extends StatelessWidget {
   final String technicianPhone;
@@ -21,8 +21,7 @@ class TrackingActionButtonsWidget extends StatelessWidget {
           child: _ActionButton(
             icon: Icons.call_rounded,
             label: 'Call Technician',
-            backgroundColor: AppTheme.primary,
-            textColor: Colors.white,
+            isAccent: true,
             onTap: onCall,
           ),
         ),
@@ -31,9 +30,7 @@ class TrackingActionButtonsWidget extends StatelessWidget {
           child: _ActionButton(
             icon: Icons.chat_bubble_rounded,
             label: 'Chat',
-            backgroundColor: AppTheme.surfaceLight,
-            textColor: AppTheme.secondary,
-            borderColor: AppTheme.outlineLight,
+            isAccent: false,
             onTap: onChat,
           ),
         ),
@@ -45,17 +42,13 @@ class TrackingActionButtonsWidget extends StatelessWidget {
 class _ActionButton extends StatefulWidget {
   final IconData icon;
   final String label;
-  final Color backgroundColor;
-  final Color textColor;
-  final Color? borderColor;
+  final bool isAccent;
   final VoidCallback onTap;
 
   const _ActionButton({
     required this.icon,
     required this.label,
-    required this.backgroundColor,
-    required this.textColor,
-    this.borderColor,
+    required this.isAccent,
     required this.onTap,
   });
 
@@ -96,47 +89,76 @@ class _ActionButtonState extends State<_ActionButton>
       onTapCancel: () => _controller.forward(),
       child: ScaleTransition(
         scale: _controller,
-        child: Container(
-          height: 50,
-          decoration: BoxDecoration(
-            color: widget.backgroundColor,
-            borderRadius: BorderRadius.circular(100),
-            border: widget.borderColor != null
-                ? Border.all(color: widget.borderColor!, width: 1.5)
-                : null,
-            boxShadow: widget.backgroundColor == AppTheme.primary
-                ? [
+        child: widget.isAccent
+            ? Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF00C896), Color(0xFF009B74)],
+                  ),
+                  borderRadius: BorderRadius.circular(100),
+                  boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primary.withAlpha(89),
-                      blurRadius: 12,
+                      color: const Color(0xFF00C896).withAlpha(102),
+                      blurRadius: 16,
                       offset: const Offset(0, 4),
                     ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(13),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(widget.icon, size: 18, color: Colors.white),
+                    const SizedBox(width: 8),
+                    Text(
+                      widget.label,
+                      style: const TextStyle(
+                        fontFamily: 'DM Sans',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
                   ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(widget.icon, size: 18, color: widget.textColor),
-              const SizedBox(width: 8),
-              Text(
-                widget.label,
-                style: TextStyle(
-                  fontFamily: 'DM Sans',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: widget.textColor,
+                ),
+              )
+            : ClipRRect(
+                borderRadius: BorderRadius.circular(100),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                  child: Container(
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F1C2E).withAlpha(217),
+                      borderRadius: BorderRadius.circular(100),
+                      border: Border.all(
+                        color: const Color(0xFF00C896).withAlpha(64),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          widget.icon,
+                          size: 18,
+                          color: const Color(0xFF00C896),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          widget.label,
+                          style: const TextStyle(
+                            fontFamily: 'DM Sans',
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFFE2E8F0),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-            ],
-          ),
-        ),
       ),
     );
   }
