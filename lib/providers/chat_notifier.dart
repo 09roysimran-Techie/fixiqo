@@ -53,19 +53,9 @@ class ChatState {
   }
 }
 
-class ChatNotifier extends Notifier<ChatState> {
-  final String provider;
-  final String model;
-  final bool streaming;
-
-  ChatNotifier({
-    required this.provider,
-    required this.model,
-    this.streaming = true,
-  });
-
+class ChatNotifier extends FamilyNotifier<ChatState, ChatConfig> {
   @override
-  ChatState build() => const ChatState();
+  ChatState build(ChatConfig arg) => const ChatState();
 
   Future<void> sendMessage(
     List<Map<String, dynamic>> messages, {
@@ -73,15 +63,15 @@ class ChatNotifier extends Notifier<ChatState> {
   }) async {
     state = ChatState(
       response: '',
-      fullResponse: streaming ? <Map<String, dynamic>>[] : null,
+      fullResponse: arg.streaming ? <Map<String, dynamic>>[] : null,
       isLoading: true,
     );
 
     try {
-      if (streaming) {
+      if (arg.streaming) {
         await getStreamingChatCompletion(
-          provider,
-          model,
+          arg.provider,
+          arg.model,
           messages,
           onChunk: (chunk) {
             final chunks = List<Map<String, dynamic>>.from(
@@ -103,8 +93,8 @@ class ChatNotifier extends Notifier<ChatState> {
         );
       } else {
         final result = await getChatCompletion(
-          provider,
-          model,
+          arg.provider,
+          arg.model,
           messages,
           parameters: parameters,
         );
@@ -129,9 +119,5 @@ class ChatNotifier extends Notifier<ChatState> {
 
 final chatNotifierProvider =
     NotifierProvider.family<ChatNotifier, ChatState, ChatConfig>(
-      (config) => ChatNotifier(
-        provider: config.provider,
-        model: config.model,
-        streaming: config.streaming,
-      ),
+      () => ChatNotifier(),
     );

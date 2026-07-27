@@ -3,6 +3,7 @@ import '../../theme/app_theme.dart';
 import '../../services/notification_service.dart';
 import './widgets/job_queue_card_widget.dart';
 import './widgets/active_job_map_widget.dart';
+import '../job_detail_screen/job_detail_screen.dart';
 
 class TechnicianJobQueueScreen extends StatefulWidget {
   const TechnicianJobQueueScreen({super.key});
@@ -82,6 +83,41 @@ class _TechnicianJobQueueScreenState extends State<TechnicianJobQueueScreen>
     }
 
     _showSnackBar('Job marked complete! Great work! 🎉', AppTheme.primary);
+  }
+
+  void _openJobDetail(Map<String, dynamic> job) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            JobDetailScreen(
+              job: job,
+              onAccept: () => _acceptJob(job),
+              onDecline: () => _rejectJob(job),
+            ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            ),
+            child: SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 0.05),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+              child: child,
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
+    );
   }
 
   void _showSnackBar(String message, Color color) {
@@ -542,9 +578,7 @@ class _TechnicianJobQueueScreenState extends State<TechnicianJobQueueScreen>
         return JobQueueCardWidget(
           job: job,
           isExpanded: _expandedJobIndex == i,
-          onTap: () => setState(() {
-            _expandedJobIndex = _expandedJobIndex == i ? -1 : i;
-          }),
+          onTap: () => _openJobDetail(job),
           onAccept: () => _acceptJob(job),
           onReject: () => _rejectJob(job),
         );
