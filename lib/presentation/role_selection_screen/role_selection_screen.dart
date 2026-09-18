@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../routes/app_routes.dart';
+import '../../services/user_role_service.dart';
 import '../../theme/app_theme.dart';
 
 class RoleSelectionScreen extends StatefulWidget {
@@ -18,6 +19,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
   late AnimationController _slideController;
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
+  bool _isLoading = false;
   int? _hoveredIndex;
 
   @override
@@ -52,6 +54,40 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
     _fadeController.dispose();
     _slideController.dispose();
     super.dispose();
+  }
+
+  Future<void> _selectCustomer() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+    try {
+      await UserRoleService.instance.saveAsCustomer();
+      if (mounted) context.go(AppRoutes.homeScreen);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not save role. Please try again.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _selectPartner() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+    try {
+      await UserRoleService.instance.saveAsPartner();
+      if (mounted) context.go(AppRoutes.partnerHomeScreen);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not save role. Please try again.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -175,7 +211,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                           colors: [Color(0xFF00C896), Color(0xFF009B74)],
                         ),
                         accentColor: AppTheme.primary,
-                        onTap: () => context.go(AppRoutes.homeScreen),
+                        isLoading: _isLoading,
+                        onTap: _selectCustomer,
                       ),
                       const SizedBox(height: 16),
                       // Partner card
@@ -194,8 +231,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                           colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
                         ),
                         accentColor: const Color(0xFF3B82F6),
-                        onTap: () =>
-                            context.go(AppRoutes.partnerDashboardScreen),
+                        isLoading: _isLoading,
+                        onTap: _selectPartner,
                       ),
                       const SizedBox(height: 32),
                       Text(
@@ -212,6 +249,14 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
               ),
             ),
           ),
+          // Full-screen loading overlay
+          if (_isLoading)
+            Container(
+              color: Colors.black.withAlpha(30),
+              child: const Center(
+                child: CircularProgressIndicator(color: AppTheme.primary),
+              ),
+            ),
         ],
       ),
     );
@@ -226,6 +271,7 @@ class _RoleCard extends StatefulWidget {
   final LinearGradient gradient;
   final Color accentColor;
   final VoidCallback onTap;
+  final bool isLoading;
 
   const _RoleCard({
     required this.icon,
@@ -235,6 +281,7 @@ class _RoleCard extends StatefulWidget {
     required this.gradient,
     required this.accentColor,
     required this.onTap,
+    this.isLoading = false,
   });
 
   @override
@@ -255,10 +302,9 @@ class _RoleCardState extends State<_RoleCard>
       lowerBound: 0.0,
       upperBound: 1.0,
     );
-    _scaleAnim = Tween<double>(
-      begin: 1.0,
-      end: 0.97,
-    ).animate(CurvedAnimation(parent: _pressController, curve: Curves.easeOut));
+    _scaleAnim = Tween<double>(begin: 1.0, end: 0.97).animate(
+      CurvedAnimation(parent: _pressController, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -273,13 +319,11 @@ class _RoleCardState extends State<_RoleCard>
       onTapDown: (_) => _pressController.forward(),
       onTapUp: (_) {
         _pressController.reverse();
-        widget.onTap();
+        if (!widget.isLoading) widget.onTap();
       },
       onTapCancel: () => _pressController.reverse(),
-      child: AnimatedBuilder(
-        animation: _scaleAnim,
-        builder: (context, child) =>
-            Transform.scale(scale: _scaleAnim.value, child: child),
+      child: ScaleTransition(
+        scale: _scaleAnim,
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.all(20),
@@ -292,38 +336,24 @@ class _RoleCardState extends State<_RoleCard>
             ),
             boxShadow: [
               BoxShadow(
-                color: widget.accentColor.withAlpha(20),
+                color: widget.accentColor.withAlpha(25),
                 blurRadius: 20,
                 offset: const Offset(0, 6),
-              ),
-              BoxShadow(
-                color: Colors.black.withAlpha(8),
-                blurRadius: 12,
-                offset: const Offset(0, 2),
               ),
             ],
           ),
           child: Row(
             children: [
-              // Icon container
               Container(
-                width: 56,
-                height: 56,
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
                   gradient: widget.gradient,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: widget.accentColor.withAlpha(60),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                child: Icon(widget.icon, color: Colors.white, size: 28),
+                child: Icon(widget.icon, color: Colors.white, size: 26),
               ),
               const SizedBox(width: 16),
-              // Text content
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -331,13 +361,12 @@ class _RoleCardState extends State<_RoleCard>
                     Text(
                       widget.title,
                       style: GoogleFonts.manrope(
-                        fontSize: 17,
+                        fontSize: 16,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF1A1A2E),
-                        letterSpacing: -0.3,
                       ),
                     ),
-                    const SizedBox(height: 3),
+                    const SizedBox(height: 2),
                     Text(
                       widget.subtitle,
                       style: GoogleFonts.manrope(
@@ -346,44 +375,35 @@ class _RoleCardState extends State<_RoleCard>
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 4,
-                      children: widget.features
-                          .map(
-                            (f) => Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: widget.accentColor.withAlpha(15),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: widget.accentColor.withAlpha(50),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Text(
-                                f,
-                                style: GoogleFonts.manrope(
-                                  fontSize: 10,
-                                  color: widget.accentColor,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                    ...widget.features.map(
+                      (f) => Padding(
+                        padding: const EdgeInsets.only(bottom: 3),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.check_circle_rounded,
+                              size: 13,
+                              color: widget.accentColor,
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              f,
+                              style: GoogleFonts.manrope(
+                                fontSize: 11,
+                                color: const Color(0xFF475569),
                               ),
                             ),
-                          )
-                          .toList(),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
               Icon(
                 Icons.arrow_forward_ios_rounded,
-                color: widget.accentColor,
                 size: 16,
+                color: widget.accentColor.withAlpha(180),
               ),
             ],
           ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/supabase_service.dart';
+import '../../services/user_role_service.dart';
 
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
@@ -147,7 +148,17 @@ class _SplashScreenState extends State<SplashScreen>
       if (mounted) {
         final session = SupabaseService.instance.client.auth.currentSession;
         if (session != null) {
-          context.go(AppRoutes.roleSelectionScreen);
+          // Determine role and route to correct shell
+          final role = await UserRoleService.instance.getCurrentRole();
+          if (!mounted) return;
+          if (role == UserRole.partner) {
+            context.go(AppRoutes.partnerHomeScreen);
+          } else if (role == UserRole.customer) {
+            context.go(AppRoutes.homeScreen);
+          } else {
+            // Logged in but no role yet — show role selection
+            context.go(AppRoutes.roleSelectionScreen);
+          }
         } else {
           context.go(AppRoutes.signUpLoginScreen);
         }

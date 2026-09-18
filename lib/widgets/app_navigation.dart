@@ -22,8 +22,13 @@ class _TabSpec {
 
 class AppNavigation extends StatefulWidget {
   final StatefulNavigationShell navigationShell;
+  final bool isPartner;
 
-  const AppNavigation({required this.navigationShell, super.key});
+  const AppNavigation({
+    required this.navigationShell,
+    this.isPartner = false,
+    super.key,
+  });
 
   @override
   State<AppNavigation> createState() => _AppNavigationState();
@@ -32,7 +37,8 @@ class AppNavigation extends StatefulWidget {
 class _AppNavigationState extends State<AppNavigation> {
   int _selectedVisualIndex = 0;
 
-  final List<_TabSpec> _tabs = const [
+  // Customer tabs — Home repairs / services layout
+  static const List<_TabSpec> _customerTabs = [
     _TabSpec(
       icon: Icons.home_outlined,
       activeIcon: Icons.home_rounded,
@@ -46,10 +52,44 @@ class _AppNavigationState extends State<AppNavigation> {
       branchIndex: null,
     ),
     _TabSpec(
-      icon: Icons.engineering_outlined,
-      activeIcon: Icons.engineering_rounded,
-      label: 'Tech Queue',
+      icon: Icons.chat_bubble_outline_rounded,
+      activeIcon: Icons.chat_bubble_rounded,
+      label: 'Messages',
+      branchIndex: null,
+    ),
+    _TabSpec(
+      icon: Icons.notifications_outlined,
+      activeIcon: Icons.notifications_rounded,
+      label: 'Alerts',
+      branchIndex: null,
+    ),
+    _TabSpec(
+      icon: Icons.person_outline_rounded,
+      activeIcon: Icons.person_rounded,
+      label: 'Profile',
+      branchIndex: 2,
+    ),
+  ];
+
+  // Partner tabs — Technician Job Queue layout
+  static const List<_TabSpec> _partnerTabs = [
+    _TabSpec(
+      icon: Icons.work_outline_rounded,
+      activeIcon: Icons.work_rounded,
+      label: 'Job Queue',
+      branchIndex: 0,
+    ),
+    _TabSpec(
+      icon: Icons.assignment_outlined,
+      activeIcon: Icons.assignment_rounded,
+      label: 'My Jobs',
       branchIndex: 1,
+    ),
+    _TabSpec(
+      icon: Icons.bar_chart_outlined,
+      activeIcon: Icons.bar_chart_rounded,
+      label: 'Earnings',
+      branchIndex: null,
     ),
     _TabSpec(
       icon: Icons.chat_bubble_outline_rounded,
@@ -65,6 +105,8 @@ class _AppNavigationState extends State<AppNavigation> {
     ),
   ];
 
+  List<_TabSpec> get _tabs => widget.isPartner ? _partnerTabs : _customerTabs;
+
   void _onTabTap(int visualIndex) {
     final tab = _tabs[visualIndex];
     if (tab.branchIndex == null) return; // stub tab — silent ignore
@@ -78,8 +120,6 @@ class _AppNavigationState extends State<AppNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
       child: Container(

@@ -40,6 +40,11 @@ class AppRoutes {
   static const String partnerNavigationScreen = '/partner-navigation-screen';
   static const String subscriptionPlanScreen = '/subscription-plan-screen';
   static const String jobChatScreen = '/job-chat-screen';
+
+  // Partner shell home (entry point for partner bottom nav)
+  static const String partnerHomeScreen = '/partner-home-screen';
+  static const String partnerJobQueueScreen = '/partner-job-queue-screen';
+  static const String partnerProfileScreen = '/partner-profile-screen';
 }
 
 final GoRouter appRouter = GoRouter(
@@ -91,9 +96,11 @@ final GoRouter appRouter = GoRouter(
         transitionDuration: const Duration(milliseconds: 280),
       ),
     ),
+
+    // ── Customer Shell (Home repairs / services layout) ──────────────
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
-        return AppScaffold(navigationShell: navigationShell);
+        return AppScaffold(navigationShell: navigationShell, isPartner: false);
       },
       branches: [
         StatefulShellBranch(
@@ -125,6 +132,43 @@ final GoRouter appRouter = GoRouter(
         ),
       ],
     ),
+
+    // ── Partner Shell (Technician Job Queue layout) ──────────────────
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) {
+        return AppScaffold(navigationShell: navigationShell, isPartner: true);
+      },
+      branches: [
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.partnerHomeScreen,
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: TechnicianJobQueueScreen()),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.partnerJobQueueScreen,
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: TechnicianJobQueueScreen()),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.partnerProfileScreen,
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: PartnerDashboardScreen()),
+            ),
+          ],
+        ),
+      ],
+    ),
+
     GoRoute(
       path: AppRoutes.liveTrackingScreen,
       pageBuilder: (context, state) => CustomTransitionPage(
@@ -354,7 +398,7 @@ final GoRouter appRouter = GoRouter(
             child: SlideTransition(
               position:
                   Tween<Offset>(
-                    begin: const Offset(0, 0.04),
+                    begin: const Offset(0.04, 0),
                     end: Offset.zero,
                   ).animate(
                     CurvedAnimation(
