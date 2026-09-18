@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../theme/app_theme.dart';
 
@@ -14,11 +15,22 @@ class SocialAuthWidget extends StatefulWidget {
 
 class _SocialAuthWidgetState extends State<SocialAuthWidget>
     with SingleTickerProviderStateMixin {
-  bool _googleLoading = false;
-  bool _appleLoading = false;
   late AnimationController _slideController;
   late Animation<Offset> _slideAnim;
   late Animation<double> _fadeAnim;
+
+  // Form state
+  bool _isLogin = true;
+  bool _isLoading = false;
+  bool _obscurePassword = true;
+  String? _errorMessage;
+
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
+  SupabaseClient get _client => Supabase.instance.client;
 
   @override
   void initState() {
@@ -43,24 +55,50 @@ class _SocialAuthWidgetState extends State<SocialAuthWidget>
   @override
   void dispose() {
     _slideController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
-  Future<void> _handleGoogleSignIn() async {
-    setState(() => _googleLoading = true);
-    await Future.delayed(const Duration(milliseconds: 1200));
-    if (mounted) {
-      setState(() => _googleLoading = false);
-      widget.onSignedIn();
-    }
-  }
+  Future<void> _handleAuth() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-  Future<void> _handleAppleSignIn() async {
-    setState(() => _appleLoading = true);
-    await Future.delayed(const Duration(milliseconds: 1200));
-    if (mounted) {
-      setState(() => _appleLoading = false);
-      widget.onSignedIn();
+    try {
+      if (_isLogin) {
+        final response = await _client.auth.signInWithPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+        if (response.user != null && mounted) {
+          widget.onSignedIn();
+        }
+      } else {
+        final response = await _client.auth.signUp(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+          data: {'full_name': _nameController.text.trim()},
+        );
+        if (response.user != null && mounted) {
+          widget.onSignedIn();
+        }
+      }
+    } on AuthException catch (e) {
+      if (mounted) {
+        setState(() => _errorMessage = e.message);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(
+          () => _errorMessage = 'Something went wrong. Please try again.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -89,168 +127,303 @@ class _SocialAuthWidgetState extends State<SocialAuthWidget>
             ],
           ),
           padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Handle
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppTheme.outlineLight,
-                  borderRadius: BorderRadius.circular(100),
-                ),
-              ),
-              const SizedBox(height: 22),
-
-              // Header text
-              Text(
-                'Get Started',
-                style: GoogleFonts.manrope(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF1A1A2E),
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Sign in to book trusted home professionals',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.manrope(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xFF64748B),
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Demo info chip
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: AppTheme.primary.withAlpha(15),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppTheme.primary.withAlpha(60),
-                    width: 1,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Handle
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppTheme.outlineLight,
+                    borderRadius: BorderRadius.circular(100),
                   ),
                 ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.info_outline_rounded,
-                      size: 15,
-                      color: AppTheme.primary,
+                const SizedBox(height: 22),
+
+                // Header text
+                Text(
+                  _isLogin ? 'Welcome Back' : 'Create Account',
+                  style: GoogleFonts.manrope(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF1A1A2E),
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  _isLogin
+                      ? 'Sign in to book trusted home professionals'
+                      : 'Join Fixiqo for trusted home services',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.manrope(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    color: const Color(0xFF64748B),
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Name field (sign-up only)
+                if (!_isLogin) ...[
+                  _buildTextField(
+                    controller: _nameController,
+                    label: 'Full Name',
+                    hint: 'Enter your full name',
+                    icon: Icons.person_outline_rounded,
+                    validator: (v) => (v == null || v.trim().isEmpty)
+                        ? 'Name is required'
+                        : null,
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
+                // Email field
+                _buildTextField(
+                  controller: _emailController,
+                  label: 'Email',
+                  hint: 'Enter your email',
+                  icon: Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return 'Email is required';
+                    }
+                    if (!v.contains('@')) return 'Enter a valid email';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+
+                // Password field
+                _buildTextField(
+                  controller: _passwordController,
+                  label: 'Password',
+                  hint: _isLogin ? 'Enter your password' : 'Min. 6 characters',
+                  icon: Icons.lock_outline_rounded,
+                  obscureText: _obscurePassword,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      size: 20,
+                      color: const Color(0xFF94A3B8),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
+                  ),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Password is required';
+                    if (!_isLogin && v.length < 6) {
+                      return 'Password must be at least 6 characters';
+                    }
+                    return null;
+                  },
+                ),
+
+                // Error message
+                if (_errorMessage != null) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withAlpha(15),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.red.withAlpha(60),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.error_outline_rounded,
+                          size: 15,
+                          color: Colors.red,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _errorMessage!,
+                            style: GoogleFonts.manrope(
+                              fontSize: 12,
+                              color: Colors.red.shade700,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 18),
+
+                // Primary action button
+                _AuthButton(
+                  label: _isLogin ? 'Sign In' : 'Create Account',
+                  iconWidget: Icon(
+                    _isLogin
+                        ? Icons.login_rounded
+                        : Icons.person_add_alt_1_rounded,
+                    size: 20,
+                    color: Colors.white,
+                  ),
+                  isLoading: _isLoading,
+                  onTap: _handleAuth,
+                  backgroundColor: AppTheme.primary,
+                  textColor: Colors.white,
+                  borderColor: Colors.transparent,
+                ),
+
+                const SizedBox(height: 16),
+
+                // Toggle login / sign-up
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      _isLogin
+                          ? "Don't have an account? "
+                          : 'Already have an account? ',
+                      style: GoogleFonts.manrope(
+                        fontSize: 13,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => setState(() {
+                        _isLogin = !_isLogin;
+                        _errorMessage = null;
+                        _formKey.currentState?.reset();
+                        _emailController.clear();
+                        _passwordController.clear();
+                        _nameController.clear();
+                      }),
                       child: Text(
-                        'Demo: tap "Continue with Google" to sign in',
+                        _isLogin ? 'Sign Up' : 'Sign In',
                         style: GoogleFonts.manrope(
-                          fontSize: 12,
-                          color: AppTheme.primaryDark,
-                          fontWeight: FontWeight.w500,
+                          fontSize: 13,
+                          color: AppTheme.primary,
+                          fontWeight: FontWeight.w700,
+                          decoration: TextDecoration.underline,
+                          decorationColor: AppTheme.primary,
                         ),
                       ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 18),
 
-              // Google button
-              _AuthButton(
-                label: 'Continue with Google',
-                iconWidget: _GoogleIcon(),
-                isLoading: _googleLoading,
-                onTap: _handleGoogleSignIn,
-                backgroundColor: AppTheme.primary,
-                textColor: Colors.white,
-                borderColor: Colors.transparent,
-              ),
-              const SizedBox(height: 12),
+                const SizedBox(height: 16),
 
-              // Apple button
-              _AuthButton(
-                label: 'Continue with Apple',
-                iconWidget: const Icon(
-                  Icons.apple_rounded,
-                  size: 22,
-                  color: Color(0xFF1A1A2E),
+                // Terms
+                RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    style: GoogleFonts.manrope(
+                      fontSize: 11,
+                      color: const Color(0xFF94A3B8),
+                    ),
+                    children: [
+                      const TextSpan(text: 'By continuing, you agree to our '),
+                      TextSpan(
+                        text: 'Terms of Service',
+                        style: TextStyle(
+                          color: AppTheme.primary,
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.underline,
+                          decorationColor: AppTheme.primary,
+                        ),
+                      ),
+                      const TextSpan(text: ' and '),
+                      TextSpan(
+                        text: 'Privacy Policy',
+                        style: TextStyle(
+                          color: AppTheme.primary,
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.underline,
+                          decorationColor: AppTheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                isLoading: _appleLoading,
-                onTap: _handleAppleSignIn,
-                backgroundColor: AppTheme.surfaceVariantLight,
-                textColor: const Color(0xFF1A1A2E),
-                borderColor: AppTheme.outlineLight,
-              ),
-              const SizedBox(height: 18),
-
-              // Divider with text
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(height: 1, color: AppTheme.outlineLight),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Text(
-                      'secure & private',
-                      style: GoogleFonts.manrope(
-                        fontSize: 11,
-                        color: const Color(0xFF94A3B8),
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(height: 1, color: AppTheme.outlineLight),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // Terms
-              RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(
-                  style: GoogleFonts.manrope(
-                    fontSize: 11,
-                    color: const Color(0xFF94A3B8),
-                  ),
-                  children: [
-                    const TextSpan(text: 'By continuing, you agree to our '),
-                    TextSpan(
-                      text: 'Terms of Service',
-                      style: TextStyle(
-                        color: AppTheme.primary,
-                        fontWeight: FontWeight.w600,
-                        decoration: TextDecoration.underline,
-                        decorationColor: AppTheme.primary,
-                      ),
-                    ),
-                    const TextSpan(text: ' and '),
-                    TextSpan(
-                      text: 'Privacy Policy',
-                      style: TextStyle(
-                        color: AppTheme.primary,
-                        fontWeight: FontWeight.w600,
-                        decoration: TextDecoration.underline,
-                        decorationColor: AppTheme.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    TextInputType? keyboardType,
+    bool obscureText = false,
+    Widget? suffixIcon,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      validator: validator,
+      style: GoogleFonts.manrope(
+        fontSize: 14,
+        color: const Color(0xFF1A1A2E),
+        fontWeight: FontWeight.w500,
+      ),
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        prefixIcon: Icon(icon, size: 20, color: const Color(0xFF94A3B8)),
+        suffixIcon: suffixIcon,
+        labelStyle: GoogleFonts.manrope(
+          fontSize: 13,
+          color: const Color(0xFF94A3B8),
+        ),
+        hintStyle: GoogleFonts.manrope(
+          fontSize: 13,
+          color: const Color(0xFFCBD5E1),
+        ),
+        filled: true,
+        fillColor: const Color(0xFFF8FAFC),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: AppTheme.outlineLight, width: 1),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: AppTheme.outlineLight, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: AppTheme.primary, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Colors.red, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Colors.red, width: 1.5),
+        ),
+        errorStyle: GoogleFonts.manrope(fontSize: 11, color: Colors.red),
       ),
     );
   }
@@ -359,73 +532,4 @@ class _AuthButtonState extends State<_AuthButton>
       ),
     );
   }
-}
-
-class _GoogleIcon extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 22,
-      height: 22,
-      child: CustomPaint(painter: _GoogleLogoPainter()),
-    );
-  }
-}
-
-class _GoogleLogoPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2;
-
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.2;
-
-    paint.color = Colors.white.withAlpha(220);
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius - 1),
-      -1.0,
-      2.0,
-      false,
-      paint,
-    );
-    paint.color = Colors.white.withAlpha(180);
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius - 1),
-      1.0,
-      1.5,
-      false,
-      paint,
-    );
-    paint.color = Colors.white.withAlpha(200);
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius - 1),
-      2.5,
-      1.0,
-      false,
-      paint,
-    );
-    paint.color = Colors.white.withAlpha(210);
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius - 1),
-      3.5,
-      0.8,
-      false,
-      paint,
-    );
-
-    paint
-      ..style = PaintingStyle.stroke
-      ..color = Colors.white.withAlpha(220)
-      ..strokeWidth = 2.2;
-    canvas.drawLine(
-      Offset(center.dx, center.dy),
-      Offset(size.width - 2, center.dy),
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

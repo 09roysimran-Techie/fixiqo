@@ -1402,6 +1402,12 @@ class _PartnerProfileTab extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             _ProfileMenuItem(
+              icon: Icons.workspace_premium_rounded,
+              label: 'Subscription Plans',
+              onTap: () => context.push(AppRoutes.subscriptionPlanScreen),
+              color: AppTheme.primary,
+            ),
+            _ProfileMenuItem(
               icon: Icons.edit_rounded,
               label: 'Edit Profile',
               onTap: () {},

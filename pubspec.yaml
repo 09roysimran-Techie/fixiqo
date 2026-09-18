@@ -27,6 +27,7 @@ dependencies:
   go_router: ^14.6.1
   razorpay_flutter: ^1.4.5
   image_picker: ^1.1.2
+  geolocator: ^14.0.3
 
 
   flutter_riverpod: any

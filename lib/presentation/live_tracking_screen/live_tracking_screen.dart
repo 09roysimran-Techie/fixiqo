@@ -8,6 +8,7 @@ import './widgets/technician_info_card_widget.dart';
 import './widgets/tracking_action_buttons_widget.dart';
 import './widgets/tracking_map_widget.dart';
 import '../../services/job_status_service.dart';
+import '../../services/location_service.dart';
 
 class LiveTrackingScreen extends StatefulWidget {
   const LiveTrackingScreen({super.key});
@@ -23,15 +24,18 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
   late Animation<double> _panelOpacity;
 
   // ── Real-time status tracking ──────────────────────────────────
-  // Maps DB status strings to the timeline index used by JobStatusTimelineWidget
-  // Timeline indices: 0=Confirmed, 1=Assigned, 2=En Route, 3=Arrived, 4=In Progress, 5=Completed
   static const Map<String, int> _statusToTimelineIndex = {
-    JobStatusValue.accepted: 2, // Technician Assigned → En Route step active
-    JobStatusValue.enRoute: 2, // En Route to You
-    JobStatusValue.arrived: 3, // Technician Arrived
-    JobStatusValue.inService: 4, // Repair In Progress
-    JobStatusValue.completed: 5, // Job Completed
+    JobStatusValue.accepted: 2,
+    JobStatusValue.enRoute: 2,
+    JobStatusValue.arrived: 3,
+    JobStatusValue.inService: 4,
+    JobStatusValue.completed: 5,
   };
+
+  // ── Real-time location tracking ────────────────────────────────
+  // Normalized [0..1] position of the technician marker on the map canvas.
+  double _techMarkerX = 0.35;
+  double _techMarkerY = 0.55;
 
   final Map<String, dynamic> _booking = {
     'id': 'FXQ-20240723-4892',
@@ -57,8 +61,14 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
     },
   };
 
-  // Derive the job ID the same way the partner screen does
   String get _jobId => _booking['id'] as String? ?? 'FXQ-20240723-4892';
+
+  // Bounding box of the map image used to convert lat/lng → normalised coords.
+  // These are approximate values for the Unsplash city map image used.
+  static const double _mapMinLat = 12.85;
+  static const double _mapMaxLat = 13.10;
+  static const double _mapMinLng = 77.45;
+  static const double _mapMaxLng = 77.75;
 
   @override
   void initState() {
@@ -82,12 +92,11 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
     );
     _entranceController.forward();
 
-    // Fetch the latest persisted status first, then subscribe for live updates
     _initRealTimeTracking();
+    _initLocationTracking();
   }
 
   Future<void> _initRealTimeTracking() async {
-    // One-time fetch to sync current state on screen open
     final latestStatus = await JobStatusService.instance.fetchLatestStatus(
       _jobId,
     );
@@ -95,7 +104,6 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
       _applyStatus(latestStatus);
     }
 
-    // Subscribe for live push updates
     JobStatusService.instance.subscribeToJob(
       jobId: _jobId,
       onStatusChanged: (status) {
@@ -104,7 +112,22 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
     );
   }
 
-  /// Translates a DB status string into the timeline index and updates state.
+  Future<void> _initLocationTracking() async {
+    // One-time fetch to show last known position immediately
+    final latest = await LocationService.instance.fetchLatestLocation(_jobId);
+    if (latest != null && mounted) {
+      _applyLocation(latest);
+    }
+
+    // Subscribe for live push updates
+    LocationService.instance.subscribeToLocation(
+      jobId: _jobId,
+      onLocationUpdated: (location) {
+        if (mounted) _applyLocation(location);
+      },
+    );
+  }
+
   void _applyStatus(String status) {
     final timelineIndex = _statusToTimelineIndex[status];
     if (timelineIndex != null) {
@@ -114,11 +137,32 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
     }
   }
 
+  /// Converts a real GPS coordinate to a normalised [0..1] canvas position
+  /// and smoothly moves the technician marker.
+  void _applyLocation(PartnerLocation location) {
+    // Clamp to map bounds and normalise
+    final lat = location.latitude.clamp(_mapMinLat, _mapMaxLat);
+    final lng = location.longitude.clamp(_mapMinLng, _mapMaxLng);
+
+    final normX = (lng - _mapMinLng) / (_mapMaxLng - _mapMinLng);
+    // Latitude increases upward, but canvas Y increases downward
+    final normY = 1.0 - (lat - _mapMinLat) / (_mapMaxLat - _mapMinLat);
+
+    // Keep within a safe visible range on the canvas
+    final clampedX = normX.clamp(0.10, 0.85);
+    final clampedY = normY.clamp(0.15, 0.80);
+
+    setState(() {
+      _techMarkerX = clampedX;
+      _techMarkerY = clampedY;
+    });
+  }
+
   @override
   void dispose() {
     _entranceController.dispose();
-    // Unsubscribe from real-time channel to prevent memory leaks
     JobStatusService.instance.unsubscribe();
+    LocationService.instance.unsubscribeLocation();
     super.dispose();
   }
 
@@ -198,10 +242,12 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
           ),
         ),
 
-        // Map takes top 45%
+        // Map takes top 45% — passes live marker position
         TrackingMapWidget(
           height: size.height * 0.45,
           technicianEta: _booking['eta'] as int,
+          techMarkerX: _techMarkerX,
+          techMarkerY: _techMarkerY,
         ),
 
         // Back button overlay
@@ -339,6 +385,8 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
               TrackingMapWidget(
                 height: double.infinity,
                 technicianEta: _booking['eta'] as int,
+                techMarkerX: _techMarkerX,
+                techMarkerY: _techMarkerY,
               ),
               Positioned(
                 top: MediaQuery.of(context).padding.top + 12,

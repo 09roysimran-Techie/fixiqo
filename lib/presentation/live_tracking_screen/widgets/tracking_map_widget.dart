@@ -4,9 +4,17 @@ class TrackingMapWidget extends StatefulWidget {
   final double height;
   final int technicianEta;
 
+  /// Normalised [0..1] X position of the technician marker on the map canvas.
+  final double techMarkerX;
+
+  /// Normalised [0..1] Y position of the technician marker on the map canvas.
+  final double techMarkerY;
+
   const TrackingMapWidget({
     required this.height,
     required this.technicianEta,
+    this.techMarkerX = 0.35,
+    this.techMarkerY = 0.55,
     super.key,
   });
 
@@ -21,12 +29,20 @@ class _TrackingMapWidgetState extends State<TrackingMapWidget>
   late Animation<double> _bounceAnim;
   late Animation<double> _rippleAnim;
 
-  final double _techX = 0.35;
-  final double _techY = 0.55;
+  // Smoothly animated marker position
+  late AnimationController _moveController;
+  late Animation<double> _animatedX;
+  late Animation<double> _animatedY;
+
+  double _prevX = 0.35;
+  double _prevY = 0.55;
 
   @override
   void initState() {
     super.initState();
+    _prevX = widget.techMarkerX;
+    _prevY = widget.techMarkerY;
+
     _markerBounce = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
@@ -35,6 +51,19 @@ class _TrackingMapWidgetState extends State<TrackingMapWidget>
       vsync: this,
       duration: const Duration(milliseconds: 1600),
     )..repeat();
+
+    // Smooth movement controller — 800 ms tween between positions
+    _moveController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    _animatedX = Tween<double>(begin: _prevX, end: _prevX).animate(
+      CurvedAnimation(parent: _moveController, curve: Curves.easeInOut),
+    );
+    _animatedY = Tween<double>(begin: _prevY, end: _prevY).animate(
+      CurvedAnimation(parent: _moveController, curve: Curves.easeInOut),
+    );
 
     _bounceAnim = Tween<double>(
       begin: 0.0,
@@ -46,9 +75,35 @@ class _TrackingMapWidgetState extends State<TrackingMapWidget>
   }
 
   @override
+  void didUpdateWidget(TrackingMapWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    final newX = widget.techMarkerX;
+    final newY = widget.techMarkerY;
+
+    if (newX != oldWidget.techMarkerX || newY != oldWidget.techMarkerY) {
+      // Capture current animated value as the new start point
+      final startX = _animatedX.value;
+      final startY = _animatedY.value;
+
+      _animatedX = Tween<double>(begin: startX, end: newX).animate(
+        CurvedAnimation(parent: _moveController, curve: Curves.easeInOut),
+      );
+      _animatedY = Tween<double>(begin: startY, end: newY).animate(
+        CurvedAnimation(parent: _moveController, curve: Curves.easeInOut),
+      );
+
+      _moveController.forward(from: 0.0);
+      _prevX = newX;
+      _prevY = newY;
+    }
+  }
+
+  @override
   void dispose() {
     _markerBounce.dispose();
     _rippleController.dispose();
+    _moveController.dispose();
     super.dispose();
   }
 
@@ -114,101 +169,100 @@ class _TrackingMapWidgetState extends State<TrackingMapWidget>
           // Home pin (destination)
           Positioned(right: 80, bottom: 80, child: _HomePinMarker()),
 
-          // Technician moving marker
-          Positioned.fill(
-            child: AnimatedBuilder(
-              animation: _bounceAnim,
-              builder: (context, child) {
-                return LayoutBuilder(
-                  builder: (context, constraints) {
-                    final x = constraints.maxWidth * _techX;
-                    final y =
-                        constraints.maxHeight * _techY + _bounceAnim.value;
-                    return Stack(
-                      children: [
-                        // Outer ripple ring
-                        Positioned(
-                          left: x - 30,
-                          top: y - 30,
-                          child: AnimatedBuilder(
-                            animation: _rippleAnim,
-                            builder: (context, _) {
-                              return Container(
-                                width: 60,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: const Color(0xFF00C896).withOpacity(
-                                      (1 - _rippleAnim.value).clamp(0.0, 0.6),
-                                    ),
-                                    width: 1.5,
+          // Technician moving marker — driven by live location
+          AnimatedBuilder(
+            animation: Listenable.merge([_bounceAnim, _animatedX, _animatedY]),
+            builder: (context, child) {
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  final x = constraints.maxWidth * _animatedX.value;
+                  final y =
+                      constraints.maxHeight * _animatedY.value +
+                      _bounceAnim.value;
+                  return Stack(
+                    children: [
+                      // Outer ripple ring
+                      Positioned(
+                        left: x - 30,
+                        top: y - 30,
+                        child: AnimatedBuilder(
+                          animation: _rippleAnim,
+                          builder: (context, _) {
+                            return Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: const Color(0xFF00C896).withOpacity(
+                                    (1 - _rippleAnim.value).clamp(0.0, 0.6),
                                   ),
+                                  width: 1.5,
                                 ),
-                                transform: Matrix4.identity()
-                                  ..scale(0.4 + _rippleAnim.value * 0.9),
-                              );
-                            },
-                          ),
-                        ),
-                        // Glow halo
-                        Positioned(
-                          left: x - 22,
-                          top: y - 22,
-                          child: Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF00C896).withAlpha(128),
-                                  blurRadius: 20,
-                                  spreadRadius: 4,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        // Technician marker
-                        Positioned(
-                          left: x - 22,
-                          top: y - 22,
-                          child: Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [Color(0xFF00C896), Color(0xFF009B74)],
                               ),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white.withAlpha(230),
-                                width: 2.5,
+                              transform: Matrix4.identity()
+                                ..scale(0.4 + _rippleAnim.value * 0.9),
+                            );
+                          },
+                        ),
+                      ),
+                      // Glow halo
+                      Positioned(
+                        left: x - 22,
+                        top: y - 22,
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF00C896).withAlpha(128),
+                                blurRadius: 20,
+                                spreadRadius: 4,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF00C896).withAlpha(153),
-                                  blurRadius: 14,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.directions_car_rounded,
-                              color: Colors.white,
-                              size: 20,
-                            ),
+                            ],
                           ),
                         ),
-                      ],
-                    );
-                  },
-                );
-              },
-            ),
+                      ),
+                      // Technician marker
+                      Positioned(
+                        left: x - 22,
+                        top: y - 22,
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Color(0xFF00C896), Color(0xFF009B74)],
+                            ),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white.withAlpha(230),
+                              width: 2.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF00C896).withAlpha(153),
+                                blurRadius: 14,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.directions_car_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
           ),
 
           // Map attribution — dark styled
@@ -248,32 +302,36 @@ class _HomePinMarker extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 44,
-          height: 44,
+          width: 36,
+          height: 36,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFFFF6B35), Color(0xFFE85520)],
+              colors: [Color(0xFFFF6B35), Color(0xFFE84E1B)],
             ),
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white.withAlpha(230), width: 2.5),
+            border: Border.all(color: Colors.white.withAlpha(230), width: 2),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFFFF6B35).withAlpha(140),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
+                blurRadius: 12,
+                offset: const Offset(0, 3),
               ),
             ],
           ),
-          child: const Icon(Icons.home_rounded, color: Colors.white, size: 22),
+          child: const Icon(Icons.home_rounded, color: Colors.white, size: 18),
         ),
-        Container(width: 2, height: 12, color: const Color(0xFFFF6B35)),
         Container(
-          width: 8,
-          height: 8,
-          decoration: const BoxDecoration(
-            color: Color(0xFFFF6B35),
+          width: 2,
+          height: 10,
+          color: const Color(0xFFFF6B35).withAlpha(180),
+        ),
+        Container(
+          width: 6,
+          height: 6,
+          decoration: BoxDecoration(
+            color: const Color(0xFFFF6B35).withAlpha(100),
             shape: BoxShape.circle,
           ),
         ),
@@ -286,28 +344,42 @@ class _RoutePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF00C896).withAlpha(179)
-      ..strokeWidth = 3.5
+      ..color = const Color(0xFF00C896).withAlpha(120)
+      ..strokeWidth = 2.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
-    final path = Path();
-    path.moveTo(size.width * 0.35, size.height * 0.55);
-    path.cubicTo(
-      size.width * 0.45,
-      size.height * 0.45,
-      size.width * 0.60,
-      size.height * 0.55,
-      size.width * 0.80,
-      size.height * 0.30,
-    );
-
     final dashPaint = Paint()
-      ..color = const Color(0xFF00C896).withAlpha(77)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
+      ..color = const Color(0xFF00C896).withAlpha(60)
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final path = Path()
+      ..moveTo(size.width * 0.35, size.height * 0.55)
+      ..cubicTo(
+        size.width * 0.45,
+        size.height * 0.45,
+        size.width * 0.65,
+        size.height * 0.40,
+        size.width - 80,
+        size.height - 80,
+      );
 
     canvas.drawPath(path, paint);
+
+    // Dashed shadow
+    final dashPath = Path()
+      ..moveTo(size.width * 0.35, size.height * 0.55)
+      ..cubicTo(
+        size.width * 0.42,
+        size.height * 0.50,
+        size.width * 0.60,
+        size.height * 0.45,
+        size.width - 80,
+        size.height - 80,
+      );
+    canvas.drawPath(dashPath, dashPaint);
   }
 
   @override

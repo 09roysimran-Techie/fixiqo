@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
 import '../../routes/app_routes.dart';
 import '../../services/notification_service.dart';
+import '../../services/job_assignment_service.dart';
 
 class OrderConfirmationScreen extends StatefulWidget {
   final Map<String, dynamic>? orderData;
@@ -78,16 +79,71 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen>
       _contentController.forward();
     });
 
-    // Send real-time notifications after booking confirmed
-    _sendBookingNotifications();
+    // Auto-assign nearest available partner, then send notifications
+    _assignPartnerAndNotify();
   }
 
-  void _sendBookingNotifications() {
-    final service = NotificationService.instance;
+  /// Calls the real partner-assignment logic, updates the order map with the
+  /// assigned technician name, then fires notifications.
+  Future<void> _assignPartnerAndNotify() async {
     final bookingId = _order['bookingId'] as String? ?? 'FIQ-UNKNOWN';
     final serviceName = _order['service'] as String? ?? 'Home Service';
-    final address = _order['address'] as String? ?? 'Your location';
+    final address = _order['address'] as String? ?? '';
     final amount = (_order['totalAmount'] as num?)?.toInt() ?? 0;
+    final paymentId = _order['paymentId'] as String?;
+    final paymentMethod = _order['paymentMethod'] as String?;
+    final scheduledAt = _order['date'] as String?;
+
+    // Attempt real assignment via Supabase
+    final assigned = await JobAssignmentService.instance.findAndAssignPartner(
+      bookingRef: bookingId,
+      serviceName: serviceName,
+      address: address,
+      scheduledAt: scheduledAt,
+      totalAmount: amount,
+      paymentId: paymentId,
+      paymentMethod: paymentMethod,
+      // Pass customer coordinates if available in order data
+      customerLat: (_order['customerLat'] as num?)?.toDouble(),
+      customerLng: (_order['customerLng'] as num?)?.toDouble(),
+    );
+
+    // Update displayed technician name if assignment succeeded
+    if (assigned != null && mounted) {
+      setState(() {
+        _order = {
+          ..._order,
+          'technician': assigned.partnerName,
+          'assignedPartnerId': assigned.partnerId,
+          'partnerRating': assigned.rating,
+          if (assigned.distanceKm != null)
+            'distanceKm': assigned.distanceKm!.toStringAsFixed(1),
+        };
+      });
+    }
+
+    // Send real-time notifications (use assigned name if available)
+    final technicianName =
+        assigned?.partnerName ??
+        _order['technician'] as String? ??
+        'Your technician';
+    _sendBookingNotifications(
+      bookingId,
+      serviceName,
+      address,
+      amount,
+      technicianName,
+    );
+  }
+
+  void _sendBookingNotifications(
+    String bookingId,
+    String serviceName,
+    String address,
+    int amount,
+    String technicianName,
+  ) {
+    final service = NotificationService.instance;
 
     // Notify homeowner: booking confirmed
     service.notifyHomeownerStatusUpdate(
@@ -95,7 +151,7 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen>
       status: 'accepted',
       service: serviceName,
       bookingId: bookingId,
-      technicianName: _order['technician'] as String? ?? 'Your technician',
+      technicianName: technicianName,
     );
 
     // Notify technician: new job alert

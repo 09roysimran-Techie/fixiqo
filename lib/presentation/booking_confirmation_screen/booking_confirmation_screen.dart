@@ -86,6 +86,11 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
             'bookingId': bookingId,
             'paymentId': 'WEB_SIM_${DateTime.now().millisecondsSinceEpoch}',
             'status': 'confirmed',
+            // Pass through any coordinates stored in _data
+            if (_data['customerLat'] != null)
+              'customerLat': _data['customerLat'],
+            if (_data['customerLng'] != null)
+              'customerLng': _data['customerLng'],
           },
         );
       });
@@ -105,6 +110,11 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
               'bookingId': bookingId,
               'paymentId': paymentId,
               'status': 'confirmed',
+              // Pass through any coordinates stored in _data
+              if (_data['customerLat'] != null)
+                'customerLat': _data['customerLat'],
+              if (_data['customerLng'] != null)
+                'customerLng': _data['customerLng'],
             },
           );
         },

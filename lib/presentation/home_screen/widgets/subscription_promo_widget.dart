@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import '../../../routes/app_routes.dart';
 
 class SubscriptionPromoWidget extends StatelessWidget {
   const SubscriptionPromoWidget({super.key});
@@ -172,7 +175,7 @@ class SubscriptionPromoWidget extends StatelessWidget {
                 const SizedBox(height: 18),
                 // CTA
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () => context.push(AppRoutes.subscriptionPlanScreen),
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 14),

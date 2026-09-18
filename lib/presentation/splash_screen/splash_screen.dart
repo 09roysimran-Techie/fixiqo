@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../services/supabase_service.dart';
 
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
@@ -32,13 +33,25 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _exitOpacity;
 
   final List<Map<String, dynamic>> _services = [
-{'icon': Icons.plumbing_rounded, 'label': 'Plumbing', 'delay': 0.0},
-{'icon': Icons.electrical_services_rounded, 'label': 'Electrical', 'delay': 0.12},
-{'icon': Icons.ac_unit_rounded, 'label': 'AC Repair', 'delay': 0.24},
-{'icon': Icons.construction_rounded, 'label': 'Carpentry', 'delay': 0.36},
-{'icon': Icons.cleaning_services_rounded, 'label': 'Cleaning', 'delay': 0.48},
-{'icon': Icons.pest_control_rounded, 'label': 'Pest Control', 'delay': 0.60},
-];
+    {'icon': Icons.plumbing_rounded, 'label': 'Plumbing', 'delay': 0.0},
+    {
+      'icon': Icons.electrical_services_rounded,
+      'label': 'Electrical',
+      'delay': 0.12,
+    },
+    {'icon': Icons.ac_unit_rounded, 'label': 'AC Repair', 'delay': 0.24},
+    {'icon': Icons.construction_rounded, 'label': 'Carpentry', 'delay': 0.36},
+    {
+      'icon': Icons.cleaning_services_rounded,
+      'label': 'Cleaning',
+      'delay': 0.48,
+    },
+    {
+      'icon': Icons.pest_control_rounded,
+      'label': 'Pest Control',
+      'delay': 0.60,
+    },
+  ];
 
   @override
   void initState() {
@@ -74,9 +87,10 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 500),
     );
 
-    _bgGradientAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _bgController, curve: Curves.easeInOut),
-    );
+    _bgGradientAnim = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _bgController, curve: Curves.easeInOut));
 
     _logoScale = Tween<double>(begin: 0.5, end: 1.0).animate(
       CurvedAnimation(parent: _logoController, curve: Curves.elasticOut),
@@ -87,26 +101,24 @@ class _SplashScreenState extends State<SplashScreen>
         curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
       ),
     );
-    _logoSlide = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _logoController, curve: Curves.easeOutCubic),
-    );
+    _logoSlide = Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _logoController, curve: Curves.easeOutCubic),
+        );
 
-    _textOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _textController, curve: Curves.easeOut),
-    );
-    _textSlide = Tween<Offset>(
-      begin: const Offset(0, 0.4),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _textController, curve: Curves.easeOutCubic),
-    );
+    _textOpacity = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _textController, curve: Curves.easeOut));
+    _textSlide = Tween<Offset>(begin: const Offset(0, 0.4), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _textController, curve: Curves.easeOutCubic),
+        );
 
-    _iconsOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _iconsController, curve: Curves.easeOut),
-    );
+    _iconsOpacity = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _iconsController, curve: Curves.easeOut));
 
     _pulseAnim = Tween<double>(begin: 0.95, end: 1.05).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
@@ -133,7 +145,12 @@ class _SplashScreenState extends State<SplashScreen>
     if (mounted) {
       await _exitController.forward();
       if (mounted) {
-        context.go(AppRoutes.signUpLoginScreen);
+        final session = SupabaseService.instance.client.auth.currentSession;
+        if (session != null) {
+          context.go(AppRoutes.roleSelectionScreen);
+        } else {
+          context.go(AppRoutes.signUpLoginScreen);
+        }
       }
     }
   }
@@ -219,11 +236,7 @@ class _SplashScreenState extends State<SplashScreen>
               ),
 
               // Animated dot grid pattern
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: _DotGridPainter(),
-                ),
-              ),
+              Positioned.fill(child: CustomPaint(painter: _DotGridPainter())),
 
               // Main content
               SafeArea(
@@ -402,7 +415,9 @@ class _SplashScreenState extends State<SplashScreen>
                               icon: service['icon'] as IconData,
                               label: service['label'] as String,
                               delay: Duration(
-                                milliseconds: ((service['delay'] as double) * 600).toInt(),
+                                milliseconds:
+                                    ((service['delay'] as double) * 600)
+                                        .toInt(),
                               ),
                               parentController: _iconsController,
                             );
@@ -487,9 +502,10 @@ class _AnimatedServiceChipState extends State<_AnimatedServiceChip>
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
-    _scale = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
-    );
+    _scale = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
     _opacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
@@ -528,16 +544,9 @@ class _AnimatedServiceChipState extends State<_AnimatedServiceChip>
               decoration: BoxDecoration(
                 color: Colors.white.withAlpha(30),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: Colors.white.withAlpha(60),
-                  width: 1,
-                ),
+                border: Border.all(color: Colors.white.withAlpha(60), width: 1),
               ),
-              child: Icon(
-                widget.icon,
-                size: 22,
-                color: Colors.white,
-              ),
+              child: Icon(widget.icon, size: 22, color: Colors.white),
             ),
             const SizedBox(height: 5),
             Text(
@@ -567,10 +576,7 @@ class _DecorativeCircle extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-      ),
+      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
     );
   }
 }

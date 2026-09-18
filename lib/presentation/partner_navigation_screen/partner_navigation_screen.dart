@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/custom_image_widget.dart';
 import '../../services/job_status_service.dart';
+import '../../services/location_service.dart';
 
 // ── Fixiqo Dark Premium Palette ──────────────────────────────────
 const _bg = Color(0xFF060C16); // deepest background
@@ -120,6 +121,12 @@ class _PartnerNavigationScreenState extends State<PartnerNavigationScreen>
     // Publish initial "accepted" status so customer screen can pick it up
     _publishCurrentStatus(JobStatus.accepted);
 
+    // Start publishing GPS location every 5 seconds
+    LocationService.instance.startPublishing(
+      jobId: _jobId,
+      partnerId: widget.job['partnerId'] as String?,
+    );
+
     // Auto-advance to en route after 2s
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) _advanceStatus(JobStatus.enRoute);
@@ -198,6 +205,8 @@ class _PartnerNavigationScreenState extends State<PartnerNavigationScreen>
     _statusPulse.dispose();
     _etaTimer?.cancel();
     _moveTimer?.cancel();
+    // Stop publishing GPS when partner leaves the navigation screen
+    LocationService.instance.stopPublishing();
     super.dispose();
   }
 

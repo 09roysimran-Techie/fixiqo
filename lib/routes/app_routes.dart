@@ -17,6 +17,7 @@ import '../presentation/ai_diagnosis_screen/ai_diagnosis_screen.dart';
 import '../presentation/role_selection_screen/role_selection_screen.dart';
 import '../presentation/partner_dashboard_screen/partner_dashboard_screen.dart';
 import '../presentation/partner_navigation_screen/partner_navigation_screen.dart';
+import '../presentation/subscription_plan_screen/subscription_plan_screen.dart';
 
 class AppRoutes {
   static const String initial = '/';
@@ -36,6 +37,7 @@ class AppRoutes {
   static const String roleSelectionScreen = '/role-selection-screen';
   static const String partnerDashboardScreen = '/partner-dashboard-screen';
   static const String partnerNavigationScreen = '/partner-navigation-screen';
+  static const String subscriptionPlanScreen = '/subscription-plan-screen';
 }
 
 final GoRouter appRouter = GoRouter(
@@ -425,6 +427,35 @@ final GoRouter appRouter = GoRouter(
           transitionDuration: const Duration(milliseconds: 280),
         );
       },
+    ),
+    GoRoute(
+      path: AppRoutes.subscriptionPlanScreen,
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const SubscriptionPlanScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            ),
+            child: SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 0.04),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+              child: child,
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 280),
+      ),
     ),
   ],
 );
