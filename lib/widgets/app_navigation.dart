@@ -46,10 +46,10 @@ class _AppNavigationState extends State<AppNavigation> {
       branchIndex: 0,
     ),
     _TabSpec(
-      icon: Icons.explore_outlined,
-      activeIcon: Icons.explore_rounded,
-      label: 'Explore',
-      branchIndex: null,
+      icon: Icons.history_rounded,
+      activeIcon: Icons.history_rounded,
+      label: 'Bookings',
+      branchIndex: 1,
     ),
     _TabSpec(
       icon: Icons.chat_bubble_outline_rounded,
@@ -67,7 +67,7 @@ class _AppNavigationState extends State<AppNavigation> {
       icon: Icons.person_outline_rounded,
       activeIcon: Icons.person_rounded,
       label: 'Profile',
-      branchIndex: 2,
+      branchIndex: 3,
     ),
   ];
 

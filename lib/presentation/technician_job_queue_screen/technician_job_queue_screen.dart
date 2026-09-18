@@ -6,6 +6,7 @@ import '../../services/technician_job_service.dart';
 import './widgets/job_queue_card_widget.dart';
 import './widgets/active_job_map_widget.dart';
 import '../job_detail_screen/job_detail_screen.dart';
+import '../job_completion_screen/job_completion_screen.dart';
 
 class TechnicianJobQueueScreen extends StatefulWidget {
   const TechnicianJobQueueScreen({super.key});
@@ -151,25 +152,60 @@ class _TechnicianJobQueueScreenState extends State<TechnicianJobQueueScreen>
     final completedJob = _activeJob;
     if (completedJob == null) return;
 
-    final bookingId = completedJob['id'] as String? ?? '';
-    if (bookingId.isNotEmpty) {
-      await TechnicianJobService.instance.completeJob(bookingId);
-    }
-
-    if (!mounted) return;
-    setState(() {
-      _activeJob = null;
-    });
-
-    NotificationService.instance.notifyHomeownerStatusUpdate(
-      homeownerId: 'demo-homeowner-001',
-      status: 'completed',
-      service: completedJob['service'] as String? ?? 'Home Service',
-      bookingId: bookingId,
-      technicianName: 'Arjun Mehta',
+    // Navigate to job completion screen for service notes + invoice generation
+    final result = await Navigator.of(context).push<bool>(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return JobCompletionScreen(
+            job: Map<String, dynamic>.from(completedJob),
+          );
+        },
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            ),
+            child: SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 0.04),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+              child: child,
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
     );
 
-    _showSnackBar('Job marked complete! Great work! 🎉', AppTheme.primary);
+    if (!mounted) return;
+
+    // If job was completed successfully (result == true), clear active job
+    if (result == true) {
+      setState(() {
+        _activeJob = null;
+      });
+
+      NotificationService.instance.notifyHomeownerStatusUpdate(
+        homeownerId: 'demo-homeowner-001',
+        status: 'completed',
+        service: completedJob['service'] as String? ?? 'Home Service',
+        bookingId: completedJob['id'] as String? ?? '',
+        technicianName: 'Arjun Mehta',
+      );
+
+      _showSnackBar(
+        'Job marked complete! Invoice generated. 🎉',
+        AppTheme.primary,
+      );
+    }
   }
 
   void _openJobDetail(TechnicianJob job) {

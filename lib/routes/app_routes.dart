@@ -19,6 +19,8 @@ import '../presentation/partner_dashboard_screen/partner_dashboard_screen.dart';
 import '../presentation/partner_navigation_screen/partner_navigation_screen.dart';
 import '../presentation/subscription_plan_screen/subscription_plan_screen.dart';
 import '../presentation/job_chat_screen/job_chat_screen.dart';
+import '../presentation/past_bookings_screen/past_bookings_screen.dart';
+import '../presentation/job_completion_screen/job_completion_screen.dart';
 
 class AppRoutes {
   static const String initial = '/';
@@ -40,6 +42,8 @@ class AppRoutes {
   static const String partnerNavigationScreen = '/partner-navigation-screen';
   static const String subscriptionPlanScreen = '/subscription-plan-screen';
   static const String jobChatScreen = '/job-chat-screen';
+  static const String pastBookingsScreen = '/past-bookings-screen';
+  static const String jobCompletionScreen = '/job-completion-screen';
 
   // Partner shell home (entry point for partner bottom nav)
   static const String partnerHomeScreen = '/partner-home-screen';
@@ -109,6 +113,15 @@ final GoRouter appRouter = GoRouter(
               path: AppRoutes.homeScreen,
               pageBuilder: (context, state) =>
                   const NoTransitionPage(child: HomeScreen()),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.pastBookingsScreen,
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: PastBookingsScreen()),
             ),
           ],
         ),
@@ -510,6 +523,38 @@ final GoRouter appRouter = GoRouter(
         return CustomTransitionPage(
           key: state.pageKey,
           child: JobChatScreen(chatData: extra),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+              ),
+              child: SlideTransition(
+                position:
+                    Tween<Offset>(
+                      begin: const Offset(0, 0.04),
+                      end: Offset.zero,
+                    ).animate(
+                      CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeOutCubic,
+                      ),
+                    ),
+                child: child,
+              ),
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 280),
+        );
+      },
+    ),
+    GoRoute(
+      path: AppRoutes.jobCompletionScreen,
+      pageBuilder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>? ?? {};
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: JobCompletionScreen(job: extra),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(
               opacity: CurvedAnimation(
