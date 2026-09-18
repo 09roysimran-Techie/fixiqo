@@ -65,19 +65,44 @@ class _PaymentScreenState extends State<PaymentScreen>
     super.dispose();
   }
 
-  int get _totalAmount {
-    final base = (_booking['basePrice'] as num).toInt();
-    final fee = (_booking['convenienceFee'] as num).toInt();
-    final gst = (_booking['gst'] as num).toInt();
-    return base + fee + gst;
-  }
+  int get _basePrice => (_booking['basePrice'] as num?)?.toInt() ?? 0;
+  int get _platformFee => (_booking['convenienceFee'] as num?)?.toInt() ?? 0;
+  int get _gst => (_booking['gst'] as num?)?.toInt() ?? 0;
+  int get _totalAmount => _basePrice + _platformFee + _gst;
 
   void _proceedToPayment() {
     if (_isProcessing) return;
-    setState(() => _isProcessing = true);
+    _showPaymentConfirmationSheet();
+  }
 
-    // Navigate to booking confirmation screen
-    Future.delayed(const Duration(milliseconds: 400), () {
+  void _showPaymentConfirmationSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _PaymentConfirmationSheet(
+        booking: _booking,
+        basePrice: _basePrice,
+        platformFee: _platformFee,
+        gst: _gst,
+        total: _totalAmount,
+        paymentMethodLabel: _selectedMethod == 0
+            ? 'UPI'
+            : _selectedMethod == 1
+            ? 'Credit / Debit Card'
+            : 'Mobile Wallet',
+        onConfirm: () {
+          Navigator.of(ctx).pop();
+          _launchRazorpay();
+        },
+      ),
+    );
+  }
+
+  void _launchRazorpay() {
+    if (_isProcessing) return;
+    setState(() => _isProcessing = true);
+    Future.delayed(const Duration(milliseconds: 300), () {
       if (!mounted) return;
       setState(() => _isProcessing = false);
       context.push(
@@ -125,7 +150,13 @@ class _PaymentScreenState extends State<PaymentScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _BookingSummaryCard(booking: _booking, total: _totalAmount),
+                  _BookingSummaryCard(
+                    booking: _booking,
+                    basePrice: _basePrice,
+                    platformFee: _platformFee,
+                    gst: _gst,
+                    total: _totalAmount,
+                  ),
                   const SizedBox(height: 24),
                   Text(
                     'Choose Payment Method',
@@ -193,17 +224,25 @@ class _PaymentScreenState extends State<PaymentScreen>
   }
 }
 
-// ─── Booking Summary Card ────────────────────────────────────────────────────
+// ─── Booking Summary Card (Enhanced) ─────────────────────────────────────────
 
 class _BookingSummaryCard extends StatelessWidget {
   final Map<String, dynamic> booking;
+  final int basePrice;
+  final int platformFee;
+  final int gst;
   final int total;
 
-  const _BookingSummaryCard({required this.booking, required this.total});
+  const _BookingSummaryCard({
+    required this.booking,
+    required this.basePrice,
+    required this.platformFee,
+    required this.gst,
+    required this.total,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.surfaceLight,
@@ -219,6 +258,7 @@ class _BookingSummaryCard extends StatelessWidget {
       ),
       child: Column(
         children: [
+          // Header
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
             decoration: BoxDecoration(
@@ -236,20 +276,41 @@ class _BookingSummaryCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  'Booking Summary',
+                  'Order Summary',
                   style: GoogleFonts.dmSans(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                     fontSize: 15,
                   ),
                 ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary.withAlpha(40),
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Text(
+                    'Razorpay Secured',
+                    style: GoogleFonts.dmSans(
+                      color: AppTheme.primary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
+
           Padding(
             padding: const EdgeInsets.all(18),
             child: Column(
               children: [
+                // Service info rows
                 _SummaryRow(
                   icon: Icons.build_circle_outlined,
                   label: booking['service'] as String? ?? 'Service',
@@ -274,48 +335,112 @@ class _BookingSummaryCard extends StatelessWidget {
                   label: 'Address',
                   value: booking['address'] as String? ?? '',
                 ),
+
                 const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
+                  padding: EdgeInsets.symmetric(vertical: 14),
                   child: Divider(color: AppTheme.outlineLight),
                 ),
-                _PriceRow(
-                  label: 'Service Charge',
-                  amount: (booking['basePrice'] as num?)?.toInt() ?? 0,
-                ),
-                const SizedBox(height: 6),
-                _PriceRow(
-                  label: 'Convenience Fee',
-                  amount: (booking['convenienceFee'] as num?)?.toInt() ?? 0,
-                ),
-                const SizedBox(height: 6),
-                _PriceRow(
-                  label: 'GST (18%)',
-                  amount: (booking['gst'] as num?)?.toInt() ?? 0,
-                ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  child: Divider(color: AppTheme.outlineLight),
-                ),
+
+                // ── Price Breakdown Section ──
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    const Icon(
+                      Icons.calculate_outlined,
+                      size: 15,
+                      color: AppTheme.primary,
+                    ),
+                    const SizedBox(width: 6),
                     Text(
-                      'Total Amount',
+                      'Price Breakdown',
                       style: GoogleFonts.dmSans(
-                        fontSize: 16,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.secondary,
                       ),
                     ),
-                    Text(
-                      '₹$total',
-                      style: GoogleFonts.dmSans(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: AppTheme.primary,
-                      ),
-                    ),
                   ],
+                ),
+                const SizedBox(height: 12),
+
+                // Service Cost
+                _ItemizedRow(
+                  label: 'Service Cost',
+                  sublabel: 'Labour + parts estimate',
+                  amount: basePrice,
+                  amountColor: AppTheme.secondary,
+                ),
+                const SizedBox(height: 10),
+
+                // Platform Fee
+                _ItemizedRow(
+                  label: 'Platform Fee',
+                  sublabel: 'Booking & support charges',
+                  amount: platformFee,
+                  amountColor: AppTheme.secondary,
+                  badge: 'One-time',
+                  badgeColor: const Color(0xFF6C63FF),
+                ),
+                const SizedBox(height: 10),
+
+                // GST
+                _ItemizedRow(
+                  label: 'GST',
+                  sublabel: '18% on service cost',
+                  amount: gst,
+                  amountColor: AppTheme.secondary,
+                  badge: '18%',
+                  badgeColor: const Color(0xFFFF8C42),
+                ),
+
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Divider(color: AppTheme.outlineLight, thickness: 1.5),
+                ),
+
+                // Total
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary.withAlpha(15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.primary.withAlpha(50)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Total Payable',
+                            style: GoogleFonts.dmSans(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.secondary,
+                            ),
+                          ),
+                          Text(
+                            'Inclusive of all taxes',
+                            style: GoogleFonts.dmSans(
+                              fontSize: 11,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        '₹$total',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -325,6 +450,432 @@ class _BookingSummaryCard extends StatelessWidget {
     );
   }
 }
+
+// ─── Itemized Row ─────────────────────────────────────────────────────────────
+
+class _ItemizedRow extends StatelessWidget {
+  final String label;
+  final String sublabel;
+  final int amount;
+  final Color amountColor;
+  final String? badge;
+  final Color? badgeColor;
+
+  const _ItemizedRow({
+    required this.label,
+    required this.sublabel,
+    required this.amount,
+    required this.amountColor,
+    this.badge,
+    this.badgeColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    label,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.secondary,
+                    ),
+                  ),
+                  if (badge != null) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: (badgeColor ?? AppTheme.primary).withAlpha(20),
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      child: Text(
+                        badge!,
+                        style: GoogleFonts.dmSans(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: badgeColor ?? AppTheme.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 2),
+              Text(
+                sublabel,
+                style: GoogleFonts.dmSans(
+                  fontSize: 11,
+                  color: const Color(0xFF94A3B8),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Text(
+          '₹$amount',
+          style: GoogleFonts.dmSans(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: amountColor,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Payment Confirmation Bottom Sheet ───────────────────────────────────────
+
+class _PaymentConfirmationSheet extends StatelessWidget {
+  final Map<String, dynamic> booking;
+  final int basePrice;
+  final int platformFee;
+  final int gst;
+  final int total;
+  final String paymentMethodLabel;
+  final VoidCallback onConfirm;
+
+  const _PaymentConfirmationSheet({
+    required this.booking,
+    required this.basePrice,
+    required this.platformFee,
+    required this.gst,
+    required this.total,
+    required this.paymentMethodLabel,
+    required this.onConfirm,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        24,
+        0,
+        24,
+        24 + MediaQuery.of(context).padding.bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle bar
+          Container(
+            margin: const EdgeInsets.only(top: 12, bottom: 20),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE2E8F0),
+              borderRadius: BorderRadius.circular(100),
+            ),
+          ),
+
+          // Title
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withAlpha(20),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.payments_rounded,
+                  color: AppTheme.primary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Confirm Payment',
+                    style: GoogleFonts.dmSans(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.secondary,
+                    ),
+                  ),
+                  Text(
+                    'Review before proceeding to Razorpay',
+                    style: GoogleFonts.dmSans(
+                      fontSize: 12,
+                      color: const Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          // Breakdown container
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.outlineLight),
+            ),
+            child: Column(
+              children: [
+                _SheetRow(
+                  label: 'Service',
+                  value: booking['service'] as String? ?? 'Home Service',
+                  isService: true,
+                ),
+                const Divider(height: 20, color: Color(0xFFE2E8F0)),
+                _SheetPriceRow(
+                  label: 'Service Cost',
+                  sublabel: 'Labour + parts',
+                  amount: basePrice,
+                ),
+                const SizedBox(height: 10),
+                _SheetPriceRow(
+                  label: 'Platform Fee',
+                  sublabel: 'Booking & support',
+                  amount: platformFee,
+                ),
+                const SizedBox(height: 10),
+                _SheetPriceRow(
+                  label: 'GST (18%)',
+                  sublabel: 'Govt. tax on service',
+                  amount: gst,
+                ),
+                const Divider(height: 20, color: Color(0xFFE2E8F0)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Total Payable',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.secondary,
+                      ),
+                    ),
+                    Text(
+                      '₹$total',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          // Payment method indicator
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.payment_rounded,
+                  size: 16,
+                  color: Color(0xFF64748B),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Paying via  ',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 13,
+                    color: const Color(0xFF64748B),
+                  ),
+                ),
+                Text(
+                  paymentMethodLabel,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.secondary,
+                  ),
+                ),
+                const Spacer(),
+                const Icon(
+                  Icons.lock_rounded,
+                  size: 14,
+                  color: AppTheme.success,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  'Secured',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 12,
+                    color: AppTheme.success,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Confirm button
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton(
+              onPressed: onConfirm,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.lock_rounded, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Proceed to Pay  ₹$total',
+                    style: GoogleFonts.dmSans(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          Text(
+            'You will be redirected to Razorpay\'s secure checkout',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.dmSans(
+              fontSize: 11,
+              color: const Color(0xFF94A3B8),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SheetRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool isService;
+
+  const _SheetRow({
+    required this.label,
+    required this.value,
+    this.isService = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.dmSans(
+            fontSize: 12,
+            color: const Color(0xFF64748B),
+          ),
+        ),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.dmSans(
+              fontSize: 13,
+              fontWeight: isService ? FontWeight.w700 : FontWeight.w500,
+              color: AppTheme.secondary,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SheetPriceRow extends StatelessWidget {
+  final String label;
+  final String sublabel;
+  final int amount;
+
+  const _SheetPriceRow({
+    required this.label,
+    required this.sublabel,
+    required this.amount,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: GoogleFonts.dmSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppTheme.secondary,
+                ),
+              ),
+              Text(
+                sublabel,
+                style: GoogleFonts.dmSans(
+                  fontSize: 11,
+                  color: const Color(0xFF94A3B8),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Text(
+          '₹$amount',
+          style: GoogleFonts.dmSans(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.secondary,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Summary Row ─────────────────────────────────────────────────────────────
 
 class _SummaryRow extends StatelessWidget {
   final IconData icon;
@@ -380,37 +931,6 @@ class _SummaryRow extends StatelessWidget {
                     ),
                   ],
                 ),
-        ),
-      ],
-    );
-  }
-}
-
-class _PriceRow extends StatelessWidget {
-  final String label;
-  final int amount;
-
-  const _PriceRow({required this.label, required this.amount});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.dmSans(
-            fontSize: 13,
-            color: const Color(0xFF64748B),
-          ),
-        ),
-        Text(
-          '₹$amount',
-          style: GoogleFonts.dmSans(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: AppTheme.secondary,
-          ),
         ),
       ],
     );
@@ -883,7 +1403,7 @@ class _PayButton extends StatelessWidget {
                       const Icon(Icons.lock_rounded, size: 18),
                       const SizedBox(width: 8),
                       Text(
-                        'Pay ₹$total Securely',
+                        'Review & Pay  ₹$total',
                         style: GoogleFonts.dmSans(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,

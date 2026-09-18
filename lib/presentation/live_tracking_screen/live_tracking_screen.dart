@@ -7,6 +7,7 @@ import './widgets/job_status_timeline_widget.dart';
 import './widgets/technician_info_card_widget.dart';
 import './widgets/tracking_action_buttons_widget.dart';
 import './widgets/tracking_map_widget.dart';
+import '../../services/job_status_service.dart';
 
 class LiveTrackingScreen extends StatefulWidget {
   const LiveTrackingScreen({super.key});
@@ -20,6 +21,17 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
   late AnimationController _entranceController;
   late Animation<Offset> _panelSlide;
   late Animation<double> _panelOpacity;
+
+  // ── Real-time status tracking ──────────────────────────────────
+  // Maps DB status strings to the timeline index used by JobStatusTimelineWidget
+  // Timeline indices: 0=Confirmed, 1=Assigned, 2=En Route, 3=Arrived, 4=In Progress, 5=Completed
+  static const Map<String, int> _statusToTimelineIndex = {
+    JobStatusValue.accepted: 2, // Technician Assigned → En Route step active
+    JobStatusValue.enRoute: 2, // En Route to You
+    JobStatusValue.arrived: 3, // Technician Arrived
+    JobStatusValue.inService: 4, // Repair In Progress
+    JobStatusValue.completed: 5, // Job Completed
+  };
 
   final Map<String, dynamic> _booking = {
     'id': 'FXQ-20240723-4892',
@@ -45,6 +57,9 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
     },
   };
 
+  // Derive the job ID the same way the partner screen does
+  String get _jobId => _booking['id'] as String? ?? 'FXQ-20240723-4892';
+
   @override
   void initState() {
     super.initState();
@@ -66,11 +81,44 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
       ),
     );
     _entranceController.forward();
+
+    // Fetch the latest persisted status first, then subscribe for live updates
+    _initRealTimeTracking();
+  }
+
+  Future<void> _initRealTimeTracking() async {
+    // One-time fetch to sync current state on screen open
+    final latestStatus = await JobStatusService.instance.fetchLatestStatus(
+      _jobId,
+    );
+    if (latestStatus != null && mounted) {
+      _applyStatus(latestStatus);
+    }
+
+    // Subscribe for live push updates
+    JobStatusService.instance.subscribeToJob(
+      jobId: _jobId,
+      onStatusChanged: (status) {
+        if (mounted) _applyStatus(status);
+      },
+    );
+  }
+
+  /// Translates a DB status string into the timeline index and updates state.
+  void _applyStatus(String status) {
+    final timelineIndex = _statusToTimelineIndex[status];
+    if (timelineIndex != null) {
+      setState(() {
+        _booking['currentStatus'] = timelineIndex;
+      });
+    }
   }
 
   @override
   void dispose() {
     _entranceController.dispose();
+    // Unsubscribe from real-time channel to prevent memory leaks
+    JobStatusService.instance.unsubscribe();
     super.dispose();
   }
 

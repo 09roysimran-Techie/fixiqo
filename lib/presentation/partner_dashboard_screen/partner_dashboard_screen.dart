@@ -122,11 +122,12 @@ class _PartnerBottomNav extends StatelessWidget {
       child: Container(
         height: 68,
         decoration: BoxDecoration(
-          color: AppTheme.secondary,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(100),
+          border: Border.all(color: AppTheme.outlineLight, width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(46),
+              color: Colors.black.withAlpha(20),
               blurRadius: 24,
               offset: const Offset(0, 8),
             ),
@@ -158,15 +159,13 @@ class _PartnerBottomNav extends StatelessWidget {
                       height: 30,
                       decoration: BoxDecoration(
                         color: isActive
-                            ? activeColor.withAlpha(51)
+                            ? activeColor.withAlpha(20)
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(100),
                       ),
                       child: Icon(
                         isActive ? tab.activeIcon : tab.icon,
-                        color: isActive
-                            ? activeColor
-                            : Colors.white.withAlpha(153),
+                        color: isActive ? activeColor : const Color(0xFF94A3B8),
                         size: 20,
                       ),
                     ),
@@ -178,9 +177,7 @@ class _PartnerBottomNav extends StatelessWidget {
                         fontWeight: isActive
                             ? FontWeight.w600
                             : FontWeight.w400,
-                        color: isActive
-                            ? activeColor
-                            : Colors.white.withAlpha(128),
+                        color: isActive ? activeColor : const Color(0xFF94A3B8),
                       ),
                     ),
                   ],
@@ -733,9 +730,16 @@ class _EarningsTab extends StatelessWidget {
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFF1A1A2E), Color(0xFF0A2540)],
+                  colors: [Color(0xFF00C896), Color(0xFF009B74)],
                 ),
                 borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF00C896).withAlpha(50),
+                    blurRadius: 20,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
               child: Column(
                 children: [
@@ -743,7 +747,7 @@ class _EarningsTab extends StatelessWidget {
                     'Total Earnings',
                     style: GoogleFonts.manrope(
                       fontSize: 13,
-                      color: Colors.white.withAlpha(180),
+                      color: Colors.white.withAlpha(200),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -760,7 +764,7 @@ class _EarningsTab extends StatelessWidget {
                     'This month',
                     style: GoogleFonts.manrope(
                       fontSize: 12,
-                      color: AppTheme.primary,
+                      color: Colors.white.withAlpha(200),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -771,13 +775,13 @@ class _EarningsTab extends StatelessWidget {
                       Container(
                         width: 1,
                         height: 36,
-                        color: Colors.white.withAlpha(30),
+                        color: Colors.white.withAlpha(60),
                       ),
                       _EarningsStat(label: 'Today', value: '₹850'),
                       Container(
                         width: 1,
                         height: 36,
-                        color: Colors.white.withAlpha(30),
+                        color: Colors.white.withAlpha(60),
                       ),
                       _EarningsStat(label: 'Jobs Done', value: '28'),
                     ],
@@ -1122,9 +1126,16 @@ class _RatingsTab extends StatelessWidget {
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFF1A1A2E), Color(0xFF0A2540)],
+                  colors: [Color(0xFF00C896), Color(0xFF009B74)],
                 ),
                 borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF00C896).withAlpha(50),
+                    blurRadius: 20,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
@@ -1148,7 +1159,7 @@ class _RatingsTab extends StatelessWidget {
                             i < 4
                                 ? Icons.star_rounded
                                 : Icons.star_half_rounded,
-                            color: const Color(0xFFF59E0B),
+                            color: Colors.white,
                             size: 18,
                           ),
                         ),
@@ -1158,7 +1169,7 @@ class _RatingsTab extends StatelessWidget {
                         'Based on 28 reviews',
                         style: GoogleFonts.manrope(
                           fontSize: 12,
-                          color: Colors.white.withAlpha(160),
+                          color: Colors.white.withAlpha(200),
                         ),
                       ),
                     ],
@@ -1182,7 +1193,7 @@ class _RatingsTab extends StatelessWidget {
                                 '$star',
                                 style: GoogleFonts.manrope(
                                   fontSize: 11,
-                                  color: Colors.white.withAlpha(180),
+                                  color: Colors.white.withAlpha(200),
                                 ),
                               ),
                               const SizedBox(width: 6),
@@ -1191,10 +1202,10 @@ class _RatingsTab extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(4),
                                   child: LinearProgressIndicator(
                                     value: pct,
-                                    backgroundColor: Colors.white.withAlpha(30),
+                                    backgroundColor: Colors.white.withAlpha(50),
                                     valueColor:
                                         const AlwaysStoppedAnimation<Color>(
-                                          Color(0xFFF59E0B),
+                                          Colors.white,
                                         ),
                                     minHeight: 6,
                                   ),
@@ -1323,18 +1334,25 @@ class _PartnerProfileTab extends StatelessWidget {
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFF1A1A2E), Color(0xFF0A2540)],
+                  colors: [Color(0xFF00C896), Color(0xFF009B74)],
                 ),
                 borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF00C896).withAlpha(50),
+                    blurRadius: 20,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
                   CircleAvatar(
                     radius: 32,
-                    backgroundColor: AppTheme.primary.withAlpha(40),
+                    backgroundColor: Colors.white.withAlpha(40),
                     child: const Icon(
                       Icons.person_rounded,
-                      color: AppTheme.primary,
+                      color: Colors.white,
                       size: 36,
                     ),
                   ),
@@ -1355,7 +1373,7 @@ class _PartnerProfileTab extends StatelessWidget {
                           'AC & Electrical Specialist',
                           style: GoogleFonts.manrope(
                             fontSize: 13,
-                            color: Colors.white.withAlpha(180),
+                            color: Colors.white.withAlpha(200),
                           ),
                         ),
                         const SizedBox(height: 6),
@@ -1363,7 +1381,7 @@ class _PartnerProfileTab extends StatelessWidget {
                           children: [
                             const Icon(
                               Icons.star_rounded,
-                              color: Color(0xFFF59E0B),
+                              color: Colors.white,
                               size: 14,
                             ),
                             const SizedBox(width: 4),
@@ -1371,7 +1389,7 @@ class _PartnerProfileTab extends StatelessWidget {
                               '4.8 • 28 jobs',
                               style: GoogleFonts.manrope(
                                 fontSize: 12,
-                                color: Colors.white.withAlpha(200),
+                                color: Colors.white.withAlpha(220),
                               ),
                             ),
                           ],

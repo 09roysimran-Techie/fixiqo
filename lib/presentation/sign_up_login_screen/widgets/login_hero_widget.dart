@@ -162,18 +162,18 @@ class _LoginHeroWidgetState extends State<LoginHeroWidget>
                 end: Alignment.bottomRight,
                 colors: [
                   Color.lerp(
-                    const Color(0xFF0D1B2A),
-                    const Color(0xFF0A1628),
+                    const Color(0xFFE8F5F1),
+                    const Color(0xFFDFF2EC),
                     t,
                   )!,
                   Color.lerp(
-                    const Color(0xFF0A2540),
-                    const Color(0xFF071E35),
+                    const Color(0xFFF0F9F6),
+                    const Color(0xFFE6F7F2),
                     t,
                   )!,
                   Color.lerp(
-                    const Color(0xFF00C896).withAlpha(80),
-                    const Color(0xFF009B74).withAlpha(60),
+                    const Color(0xFF00C896).withAlpha(40),
+                    const Color(0xFF009B74).withAlpha(30),
                     t,
                   )!,
                 ],
@@ -191,7 +191,7 @@ class _LoginHeroWidgetState extends State<LoginHeroWidget>
               right: -size.width * 0.2,
               child: _DecorativeCircle(
                 size: size.width * 0.75,
-                color: AppTheme.primary.withAlpha(18),
+                color: AppTheme.primary.withAlpha(20),
               ),
             ),
             Positioned(
@@ -199,7 +199,7 @@ class _LoginHeroWidgetState extends State<LoginHeroWidget>
               left: -size.width * 0.3,
               child: _DecorativeCircle(
                 size: size.width * 0.85,
-                color: Colors.white.withAlpha(8),
+                color: AppTheme.primary.withAlpha(10),
               ),
             ),
             Positioned(
@@ -207,7 +207,7 @@ class _LoginHeroWidgetState extends State<LoginHeroWidget>
               right: -size.width * 0.1,
               child: _DecorativeCircle(
                 size: size.width * 0.45,
-                color: AppTheme.primary.withAlpha(12),
+                color: AppTheme.primary.withAlpha(15),
               ),
             ),
 
@@ -225,17 +225,24 @@ class _LoginHeroWidgetState extends State<LoginHeroWidget>
                     width: 60,
                     height: 60,
                     decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(10),
+                      color: Colors.white.withAlpha(180),
                       borderRadius: BorderRadius.circular(18),
                       border: Border.all(
-                        color: Colors.white.withAlpha(25),
+                        color: AppTheme.primary.withAlpha(60),
                         width: 1,
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.primary.withAlpha(30),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: Icon(
                       Icons.home_repair_service_rounded,
                       size: 28,
-                      color: AppTheme.primary.withAlpha(200),
+                      color: AppTheme.primary,
                     ),
                   ),
                 );
@@ -251,17 +258,24 @@ class _LoginHeroWidgetState extends State<LoginHeroWidget>
                     width: 52,
                     height: 52,
                     decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(10),
+                      color: Colors.white.withAlpha(180),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: Colors.white.withAlpha(20),
+                        color: const Color(0xFFFF6B35).withAlpha(60),
                         width: 1,
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFF6B35).withAlpha(25),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: Icon(
                       Icons.verified_rounded,
                       size: 24,
-                      color: const Color(0xFFFF6B35).withAlpha(200),
+                      color: const Color(0xFFFF6B35),
                     ),
                   ),
                 );
@@ -297,13 +311,13 @@ class _LoginHeroWidgetState extends State<LoginHeroWidget>
                               borderRadius: BorderRadius.circular(30),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppTheme.primary.withAlpha(80),
+                                  color: AppTheme.primary.withAlpha(60),
                                   blurRadius: 40,
                                   offset: const Offset(0, 12),
                                   spreadRadius: -4,
                                 ),
                                 BoxShadow(
-                                  color: Colors.black.withAlpha(50),
+                                  color: Colors.black.withAlpha(15),
                                   blurRadius: 24,
                                   offset: const Offset(0, 8),
                                 ),
@@ -364,7 +378,7 @@ class _LoginHeroWidgetState extends State<LoginHeroWidget>
                                   style: GoogleFonts.manrope(
                                     fontSize: 44,
                                     fontWeight: FontWeight.w800,
-                                    color: Colors.white,
+                                    color: const Color(0xFF1A1A2E),
                                     letterSpacing: -1.5,
                                     height: 1.0,
                                   ),
@@ -374,7 +388,7 @@ class _LoginHeroWidgetState extends State<LoginHeroWidget>
                                   style: GoogleFonts.manrope(
                                     fontSize: 44,
                                     fontWeight: FontWeight.w300,
-                                    color: Colors.white.withAlpha(210),
+                                    color: AppTheme.primary,
                                     letterSpacing: -1.5,
                                     height: 1.0,
                                   ),
@@ -389,10 +403,10 @@ class _LoginHeroWidgetState extends State<LoginHeroWidget>
                               vertical: 5,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withAlpha(20),
+                              color: AppTheme.primary.withAlpha(20),
                               borderRadius: BorderRadius.circular(100),
                               border: Border.all(
-                                color: Colors.white.withAlpha(50),
+                                color: AppTheme.primary.withAlpha(60),
                                 width: 1,
                               ),
                             ),
@@ -401,7 +415,7 @@ class _LoginHeroWidgetState extends State<LoginHeroWidget>
                               style: GoogleFonts.manrope(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.white.withAlpha(220),
+                                color: AppTheme.primaryDark,
                                 letterSpacing: 0.8,
                               ),
                             ),
@@ -413,7 +427,7 @@ class _LoginHeroWidgetState extends State<LoginHeroWidget>
                             style: GoogleFonts.manrope(
                               fontSize: 15,
                               fontWeight: FontWeight.w400,
-                              color: Colors.white.withAlpha(190),
+                              color: const Color(0xFF475569),
                               height: 1.6,
                             ),
                           ),
@@ -529,11 +543,21 @@ class _AnimatedServiceChipState extends State<_AnimatedServiceChip>
               width: 46,
               height: 46,
               decoration: BoxDecoration(
-                color: Colors.white.withAlpha(18),
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.white.withAlpha(45), width: 1),
+                border: Border.all(
+                  color: AppTheme.primary.withAlpha(50),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primary.withAlpha(20),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              child: Icon(widget.icon, size: 22, color: Colors.white),
+              child: Icon(widget.icon, size: 22, color: AppTheme.primary),
             ),
             const SizedBox(height: 5),
             Text(
@@ -541,7 +565,7 @@ class _AnimatedServiceChipState extends State<_AnimatedServiceChip>
               style: GoogleFonts.manrope(
                 fontSize: 9,
                 fontWeight: FontWeight.w600,
-                color: Colors.white.withAlpha(180),
+                color: const Color(0xFF475569),
                 letterSpacing: 0.2,
               ),
             ),
@@ -572,7 +596,7 @@ class _DotGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withAlpha(15)
+      ..color = const Color(0xFF00C896).withAlpha(25)
       ..style = PaintingStyle.fill;
 
     const spacing = 28.0;

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../routes/app_routes.dart';
+import '../../theme/app_theme.dart';
 import '../../widgets/custom_image_widget.dart';
 
 class HomeownerProfileScreen extends StatefulWidget {
@@ -131,10 +132,23 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF080E1A),
+      backgroundColor: AppTheme.backgroundLight,
       body: Stack(
         children: [
-          // Ambient background glows
+          // Light background gradient
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFE8F5F1),
+                  Color(0xFFF0F9F6),
+                  Color(0xFFF5F7FA),
+                ],
+              ),
+            ),
+          ),
           Positioned(
             top: -80,
             right: -60,
@@ -149,7 +163,7 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                     colors: [
                       const Color(
                         0xFF00C896,
-                      ).withAlpha((18 + (_pulseAnim.value * 12)).toInt()),
+                      ).withAlpha((15 + (_pulseAnim.value * 10)).toInt()),
                       Colors.transparent,
                     ],
                   ),
@@ -171,7 +185,7 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                     colors: [
                       const Color(
                         0xFFFF6B35,
-                      ).withAlpha((12 + (_pulseAnim.value * 8)).toInt()),
+                      ).withAlpha((8 + (_pulseAnim.value * 6)).toInt()),
                       Colors.transparent,
                     ],
                   ),
@@ -199,16 +213,23 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                         width: 38,
                         height: 38,
                         decoration: BoxDecoration(
-                          color: Colors.white.withAlpha(12),
+                          color: Colors.white,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Colors.white.withAlpha(20),
+                            color: AppTheme.outlineLight,
                             width: 1,
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha(10),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: const Icon(
                           Icons.arrow_back_ios_new_rounded,
-                          color: Colors.white,
+                          color: Color(0xFF1A1A2E),
                           size: 16,
                         ),
                       ),
@@ -219,7 +240,7 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                       style: GoogleFonts.dmSans(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: const Color(0xFF1A1A2E),
                         letterSpacing: -0.3,
                       ),
                     ),
@@ -241,23 +262,30 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                                     ],
                                   )
                                 : null,
-                            color: _isEditing
-                                ? null
-                                : Colors.white.withAlpha(12),
+                            color: _isEditing ? null : Colors.white,
                             borderRadius: BorderRadius.circular(100),
                             border: Border.all(
                               color: _isEditing
                                   ? Colors.transparent
-                                  : Colors.white.withAlpha(20),
+                                  : AppTheme.outlineLight,
                               width: 1,
                             ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withAlpha(8),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
                           child: Text(
                             _isEditing ? 'Save' : 'Edit',
                             style: GoogleFonts.dmSans(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                              color: _isEditing
+                                  ? Colors.white
+                                  : const Color(0xFF1A1A2E),
                             ),
                           ),
                         ),
@@ -330,14 +358,14 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F1C2E),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withAlpha(14), width: 1),
+        border: Border.all(color: AppTheme.outlineLight, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(40),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: Colors.black.withAlpha(10),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -358,8 +386,8 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF00C896).withAlpha(70),
-                      blurRadius: 16,
+                      color: const Color(0xFF00C896).withAlpha(50),
+                      blurRadius: 12,
                       spreadRadius: 0,
                     ),
                   ],
@@ -386,10 +414,7 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                   decoration: BoxDecoration(
                     color: const Color(0xFF00C896),
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0xFF0F1C2E),
-                      width: 2,
-                    ),
+                    border: Border.all(color: Colors.white, width: 2),
                   ),
                   child: const Icon(
                     Icons.check_rounded,
@@ -410,7 +435,7 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                   style: GoogleFonts.dmSans(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: const Color(0xFF1A1A2E),
                     letterSpacing: -0.3,
                   ),
                 ),
@@ -420,7 +445,7 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                   style: GoogleFonts.dmSans(
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
-                    color: Colors.white.withAlpha(140),
+                    color: const Color(0xFF64748B),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -445,9 +470,9 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(10),
+        color: AppTheme.primary.withAlpha(12),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white.withAlpha(16), width: 1),
+        border: Border.all(color: AppTheme.primary.withAlpha(30), width: 1),
       ),
       child: Column(
         children: [
@@ -456,7 +481,7 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
             style: GoogleFonts.dmSans(
               fontSize: 12,
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF00C896),
+              color: AppTheme.primaryDark,
             ),
           ),
           Text(
@@ -464,7 +489,7 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
             style: GoogleFonts.dmSans(
               fontSize: 9,
               fontWeight: FontWeight.w400,
-              color: Colors.white.withAlpha(100),
+              color: const Color(0xFF64748B),
             ),
           ),
         ],
@@ -480,9 +505,9 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: const [
-              Color(0xFF1A0A00),
-              Color(0xFF2D1200),
-              Color(0xFF1A0A00),
+              Color(0xFFFFF3EE),
+              Color(0xFFFFF8F5),
+              Color(0xFFFFF3EE),
             ],
             stops: const [0.0, 0.5, 1.0],
             begin: Alignment.topLeft,
@@ -492,15 +517,15 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
           border: Border.all(
             color: const Color(
               0xFFFF6B35,
-            ).withAlpha((60 + (_pulseAnim.value * 40)).toInt()),
+            ).withAlpha((50 + (_pulseAnim.value * 30)).toInt()),
             width: 1.2,
           ),
           boxShadow: [
             BoxShadow(
               color: const Color(
                 0xFFFF6B35,
-              ).withAlpha((20 + (_pulseAnim.value * 15)).toInt()),
-              blurRadius: 20,
+              ).withAlpha((15 + (_pulseAnim.value * 10)).toInt()),
+              blurRadius: 16,
               spreadRadius: 0,
             ),
           ],
@@ -543,7 +568,7 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                         style: GoogleFonts.dmSans(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: const Color(0xFF1A1A2E),
                           letterSpacing: -0.2,
                         ),
                       ),
@@ -579,7 +604,7 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                     style: GoogleFonts.dmSans(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      color: Colors.white.withAlpha(130),
+                      color: const Color(0xFF64748B),
                     ),
                   ),
                 ],
@@ -599,14 +624,14 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
   Widget _buildSectionHeader(String title, IconData icon) {
     return Row(
       children: [
-        Icon(icon, color: const Color(0xFF00C896), size: 18),
+        Icon(icon, color: AppTheme.primary, size: 18),
         const SizedBox(width: 8),
         Text(
           title,
           style: GoogleFonts.dmSans(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: Colors.white,
+            color: const Color(0xFF1A1A2E),
             letterSpacing: -0.2,
           ),
         ),
@@ -617,9 +642,16 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
   Widget _buildAccountInfoCard() {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0F1C2E),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withAlpha(14), width: 1),
+        border: Border.all(color: AppTheme.outlineLight, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(8),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -678,7 +710,7 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                   style: GoogleFonts.dmSans(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
-                    color: Colors.white.withAlpha(100),
+                    color: const Color(0xFF94A3B8),
                     letterSpacing: 0.2,
                   ),
                 ),
@@ -690,7 +722,7 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                         style: GoogleFonts.dmSans(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: const Color(0xFF1A1A2E),
                         ),
                         decoration: InputDecoration(
                           isDense: true,
@@ -699,20 +731,20 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                           enabledBorder: InputBorder.none,
                           focusedBorder: UnderlineInputBorder(
                             borderSide: BorderSide(
-                              color: const Color(0xFF00C896).withAlpha(160),
+                              color: AppTheme.primary.withAlpha(160),
                               width: 1,
                             ),
                           ),
                           filled: false,
                         ),
-                        cursorColor: const Color(0xFF00C896),
+                        cursorColor: AppTheme.primary,
                       )
                     : Text(
                         controller.text,
                         style: GoogleFonts.dmSans(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: const Color(0xFF1A1A2E),
                         ),
                       ),
               ],
@@ -749,7 +781,7 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                   style: GoogleFonts.dmSans(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
-                    color: Colors.white.withAlpha(100),
+                    color: const Color(0xFF94A3B8),
                     letterSpacing: 0.2,
                   ),
                 ),
@@ -759,7 +791,7 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                   style: GoogleFonts.dmSans(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: const Color(0xFF1A1A2E),
                   ),
                 ),
               ],
@@ -774,7 +806,7 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
     return Divider(
       height: 1,
       thickness: 1,
-      color: Colors.white.withAlpha(10),
+      color: AppTheme.outlineLight,
       indent: 16,
       endIndent: 16,
     );
@@ -792,9 +824,16 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
           ),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: const Color(0xFF0F1C2E),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withAlpha(12), width: 1),
+            border: Border.all(color: AppTheme.outlineLight, width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(6),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -802,10 +841,10 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: (booking['color'] as Color).withAlpha(22),
+                  color: (booking['color'] as Color).withAlpha(20),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: (booking['color'] as Color).withAlpha(50),
+                    color: (booking['color'] as Color).withAlpha(40),
                     width: 1,
                   ),
                 ),
@@ -825,7 +864,7 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                       style: GoogleFonts.dmSans(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: const Color(0xFF1A1A2E),
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -834,7 +873,7 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                       style: GoogleFonts.dmSans(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: Colors.white.withAlpha(120),
+                        color: const Color(0xFF64748B),
                       ),
                     ),
                   ],
@@ -848,7 +887,7 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                     style: GoogleFonts.dmSans(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                      color: const Color(0xFF1A1A2E),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -895,14 +934,21 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
             ),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: const Color(0xFF0F1C2E),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: addr['isPrimary'] as bool
-                    ? const Color(0xFF00C896).withAlpha(50)
-                    : Colors.white.withAlpha(12),
+                    ? AppTheme.primary.withAlpha(50)
+                    : AppTheme.outlineLight,
                 width: 1,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(6),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -912,15 +958,15 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                   height: 40,
                   decoration: BoxDecoration(
                     color: addr['isPrimary'] as bool
-                        ? const Color(0xFF00C896).withAlpha(22)
-                        : Colors.white.withAlpha(8),
+                        ? AppTheme.primary.withAlpha(20)
+                        : AppTheme.surfaceVariantLight,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
                     addr['icon'] as IconData,
                     color: addr['isPrimary'] as bool
-                        ? const Color(0xFF00C896)
-                        : Colors.white.withAlpha(140),
+                        ? AppTheme.primary
+                        : const Color(0xFF64748B),
                     size: 20,
                   ),
                 ),
@@ -936,7 +982,7 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                             style: GoogleFonts.dmSans(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                              color: const Color(0xFF1A1A2E),
                             ),
                           ),
                           if (addr['isPrimary'] as bool) ...[
@@ -947,7 +993,7 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF00C896).withAlpha(22),
+                                color: AppTheme.primary.withAlpha(20),
                                 borderRadius: BorderRadius.circular(100),
                               ),
                               child: Text(
@@ -955,7 +1001,7 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                                 style: GoogleFonts.dmSans(
                                   fontSize: 9,
                                   fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF00C896),
+                                  color: AppTheme.primaryDark,
                                 ),
                               ),
                             ),
@@ -968,7 +1014,7 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                         style: GoogleFonts.dmSans(
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
-                          color: Colors.white.withAlpha(120),
+                          color: const Color(0xFF64748B),
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,

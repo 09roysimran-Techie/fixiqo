@@ -100,17 +100,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final size = MediaQuery.of(context).size;
     final isTablet = size.width >= 600;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    final topPadding = MediaQuery.of(context).padding.top;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF080E1A),
+      backgroundColor: AppTheme.backgroundLight,
       body: AnimatedBuilder(
         animation: Listenable.merge([_bgAnim, _pulseAnim]),
         builder: (context, child) {
           final t = _bgAnim.value;
           return Stack(
             children: [
-              // Deep background gradient
+              // Light background gradient
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -118,18 +117,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     end: Alignment.bottomRight,
                     colors: [
                       Color.lerp(
-                        const Color(0xFF080E1A),
-                        const Color(0xFF0B1220),
+                        const Color(0xFFE8F5F1),
+                        const Color(0xFFDFF2EC),
                         t,
                       )!,
                       Color.lerp(
-                        const Color(0xFF0D1829),
-                        const Color(0xFF091525),
+                        const Color(0xFFF0F9F6),
+                        const Color(0xFFEAF4F0),
                         t,
                       )!,
                       Color.lerp(
-                        const Color(0xFF0A1F35),
-                        const Color(0xFF071830),
+                        const Color(0xFFF5F7FA),
+                        const Color(0xFFF0F4F8),
                         t,
                       )!,
                     ],
@@ -149,8 +148,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     gradient: RadialGradient(
                       colors: [
                         Color.lerp(
-                          const Color(0xFF00C896).withAlpha(35),
-                          const Color(0xFF00C896).withAlpha(20),
+                          const Color(0xFF00C896).withAlpha(30),
+                          const Color(0xFF00C896).withAlpha(15),
                           t,
                         )!,
                         Colors.transparent,
@@ -171,8 +170,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     gradient: RadialGradient(
                       colors: [
                         Color.lerp(
-                          const Color(0xFFFF6B35).withAlpha(20),
-                          const Color(0xFFFF6B35).withAlpha(10),
+                          const Color(0xFFFF6B35).withAlpha(15),
+                          const Color(0xFFFF6B35).withAlpha(8),
                           t,
                         )!,
                         Colors.transparent,
@@ -181,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-              // Subtle noise texture
+              // Subtle dot texture
               Positioned.fill(
                 child: CustomPaint(painter: _NoiseTexturePainter()),
               ),
@@ -212,7 +211,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               Expanded(
                 child: RefreshIndicator(
                   color: AppTheme.primary,
-                  backgroundColor: const Color(0xFF0D1829),
+                  backgroundColor: Colors.white,
                   onRefresh: () async {
                     await Future.delayed(const Duration(milliseconds: 800));
                   },
@@ -421,12 +420,12 @@ class _HeroSection extends StatelessWidget {
                   height: 8,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFF00C896),
+                    color: AppTheme.primary,
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(
-                          0xFF00C896,
-                        ).withAlpha((pulseAnim.value * 120).toInt()),
+                        color: AppTheme.primary.withAlpha(
+                          (pulseAnim.value * 100).toInt(),
+                        ),
                         blurRadius: 8,
                         spreadRadius: 2,
                       ),
@@ -440,7 +439,7 @@ class _HeroSection extends StatelessWidget {
                 style: GoogleFonts.dmSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: const Color(0xFF00C896),
+                  color: AppTheme.primaryDark,
                   letterSpacing: 0.2,
                 ),
               ),
@@ -456,7 +455,7 @@ class _HeroSection extends StatelessWidget {
                   style: GoogleFonts.dmSans(
                     fontSize: 32,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: const Color(0xFF1A1A2E),
                     height: 1.1,
                     letterSpacing: -0.5,
                   ),
@@ -471,7 +470,7 @@ class _HeroSection extends StatelessWidget {
                     letterSpacing: -0.5,
                     foreground: Paint()
                       ..shader = const LinearGradient(
-                        colors: [Color(0xFF00C896), Color(0xFF00A8FF)],
+                        colors: [Color(0xFF00C896), Color(0xFF009B74)],
                       ).createShader(const Rect.fromLTWH(0, 0, 200, 40)),
                   ),
                 ),
@@ -484,7 +483,7 @@ class _HeroSection extends StatelessWidget {
             style: GoogleFonts.dmSans(
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: Colors.white.withAlpha(120),
+              color: const Color(0xFF64748B),
               height: 1.5,
             ),
           ),
@@ -507,14 +506,14 @@ class _SearchBar extends StatelessWidget {
         child: Container(
           height: 52,
           decoration: BoxDecoration(
-            color: Colors.white.withAlpha(10),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withAlpha(22), width: 1),
+            border: Border.all(color: AppTheme.outlineLight, width: 1),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withAlpha(40),
-                blurRadius: 20,
-                offset: const Offset(0, 4),
+                color: Colors.black.withAlpha(10),
+                blurRadius: 12,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
@@ -524,7 +523,7 @@ class _SearchBar extends StatelessWidget {
               Icon(
                 Icons.search_rounded,
                 size: 20,
-                color: Colors.white.withAlpha(100),
+                color: const Color(0xFF94A3B8),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -532,7 +531,7 @@ class _SearchBar extends StatelessWidget {
                   'Search services, specialists...',
                   style: GoogleFonts.dmSans(
                     fontSize: 14,
-                    color: Colors.white.withAlpha(80),
+                    color: const Color(0xFF94A3B8),
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -544,28 +543,24 @@ class _SearchBar extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00C896).withAlpha(25),
+                  color: AppTheme.primary.withAlpha(15),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: const Color(0xFF00C896).withAlpha(60),
+                    color: AppTheme.primary.withAlpha(50),
                     width: 1,
                   ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.tune_rounded,
-                      size: 13,
-                      color: const Color(0xFF00C896),
-                    ),
+                    Icon(Icons.tune_rounded, size: 13, color: AppTheme.primary),
                     const SizedBox(width: 4),
                     Text(
                       'Filter',
                       style: GoogleFonts.dmSans(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF00C896),
+                        color: AppTheme.primary,
                       ),
                     ),
                   ],
@@ -591,19 +586,27 @@ class _LiveStatusBanner extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
+          color: Colors.white,
           gradient: LinearGradient(
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
             colors: [
-              const Color(0xFFFF6B35).withAlpha(18),
-              const Color(0xFFFF6B35).withAlpha(8),
+              const Color(0xFFFF6B35).withAlpha(12),
+              const Color(0xFFFF6B35).withAlpha(5),
             ],
           ),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: const Color(0xFFFF6B35).withAlpha(50),
+            color: const Color(0xFFFF6B35).withAlpha(40),
             width: 1,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFF6B35).withAlpha(15),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -611,7 +614,7 @@ class _LiveStatusBanner extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: const Color(0xFFFF6B35).withAlpha(25),
+                color: const Color(0xFFFF6B35).withAlpha(20),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
@@ -630,7 +633,7 @@ class _LiveStatusBanner extends StatelessWidget {
                     style: GoogleFonts.dmSans(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                      color: const Color(0xFF1A1A2E),
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -638,7 +641,7 @@ class _LiveStatusBanner extends StatelessWidget {
                     'Avg. arrival time: 18 min · 24/7 support',
                     style: GoogleFonts.dmSans(
                       fontSize: 11,
-                      color: Colors.white.withAlpha(110),
+                      color: const Color(0xFF64748B),
                     ),
                   ),
                 ],
@@ -647,7 +650,7 @@ class _LiveStatusBanner extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: const Color(0xFFFF6B35).withAlpha(30),
+                color: const Color(0xFFFF6B35).withAlpha(20),
                 borderRadius: BorderRadius.circular(100),
               ),
               child: Row(
@@ -663,7 +666,7 @@ class _LiveStatusBanner extends StatelessWidget {
                         BoxShadow(
                           color: const Color(
                             0xFFFF6B35,
-                          ).withAlpha((pulseValue * 150).toInt()),
+                          ).withAlpha((pulseValue * 120).toInt()),
                           blurRadius: 6,
                           spreadRadius: 1,
                         ),
@@ -707,7 +710,7 @@ class _AiDiagnosisBanner extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF00C896), Color(0xFF00A8FF)],
+              colors: [Color(0xFF00C896), Color(0xFF009B74)],
             ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
@@ -806,7 +809,7 @@ class _SectionHeader extends StatelessWidget {
                 style: GoogleFonts.dmSans(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
-                  color: Colors.white,
+                  color: const Color(0xFF1A1A2E),
                   letterSpacing: -0.3,
                 ),
               ),
@@ -815,7 +818,7 @@ class _SectionHeader extends StatelessWidget {
                 subtitle,
                 style: GoogleFonts.dmSans(
                   fontSize: 12,
-                  color: Colors.white.withAlpha(100),
+                  color: const Color(0xFF64748B),
                 ),
               ),
             ],
@@ -827,16 +830,19 @@ class _SectionHeader extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.white.withAlpha(10),
+                color: AppTheme.primary.withAlpha(15),
                 borderRadius: BorderRadius.circular(100),
-                border: Border.all(color: Colors.white.withAlpha(20), width: 1),
+                border: Border.all(
+                  color: AppTheme.primary.withAlpha(40),
+                  width: 1,
+                ),
               ),
               child: Text(
                 actionLabel!,
                 style: GoogleFonts.dmSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white.withAlpha(180),
+                  color: AppTheme.primaryDark,
                 ),
               ),
             ),
@@ -855,9 +861,16 @@ class _StatsStrip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(7),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withAlpha(14), width: 1),
+        border: Border.all(color: AppTheme.outlineLight, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(8),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -889,7 +902,7 @@ class _StatItem extends StatelessWidget {
             style: GoogleFonts.dmSans(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: Colors.white,
+              color: const Color(0xFF1A1A2E),
               letterSpacing: -0.2,
             ),
           ),
@@ -898,7 +911,7 @@ class _StatItem extends StatelessWidget {
             label,
             style: GoogleFonts.dmSans(
               fontSize: 10,
-              color: Colors.white.withAlpha(90),
+              color: const Color(0xFF64748B),
             ),
             textAlign: TextAlign.center,
           ),
@@ -911,7 +924,7 @@ class _StatItem extends StatelessWidget {
 class _StatDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(width: 1, height: 28, color: Colors.white.withAlpha(18));
+    return Container(width: 1, height: 28, color: AppTheme.outlineLight);
   }
 }
 
@@ -920,7 +933,7 @@ class _NoiseTexturePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withAlpha(8)
+      ..color = const Color(0xFF00C896).withAlpha(12)
       ..strokeWidth = 1.0
       ..style = PaintingStyle.fill;
 

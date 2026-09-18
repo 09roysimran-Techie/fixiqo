@@ -72,17 +72,17 @@ class _SocialAuthWidgetState extends State<SocialAuthWidget>
         opacity: _fadeAnim,
         child: Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF0D1B2A),
+            color: Colors.white,
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(32),
               topRight: Radius.circular(32),
             ),
             border: Border(
-              top: BorderSide(color: Colors.white.withAlpha(25), width: 1),
+              top: BorderSide(color: AppTheme.outlineLight, width: 1),
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withAlpha(80),
+                color: Colors.black.withAlpha(20),
                 blurRadius: 40,
                 offset: const Offset(0, -8),
               ),
@@ -97,7 +97,7 @@ class _SocialAuthWidgetState extends State<SocialAuthWidget>
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.white.withAlpha(40),
+                  color: AppTheme.outlineLight,
                   borderRadius: BorderRadius.circular(100),
                 ),
               ),
@@ -109,7 +109,7 @@ class _SocialAuthWidgetState extends State<SocialAuthWidget>
                 style: GoogleFonts.manrope(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
-                  color: Colors.white,
+                  color: const Color(0xFF1A1A2E),
                   letterSpacing: -0.5,
                 ),
               ),
@@ -120,7 +120,7 @@ class _SocialAuthWidgetState extends State<SocialAuthWidget>
                 style: GoogleFonts.manrope(
                   fontSize: 13,
                   fontWeight: FontWeight.w400,
-                  color: Colors.white.withAlpha(150),
+                  color: const Color(0xFF64748B),
                   height: 1.4,
                 ),
               ),
@@ -133,7 +133,7 @@ class _SocialAuthWidgetState extends State<SocialAuthWidget>
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: AppTheme.primary.withAlpha(20),
+                  color: AppTheme.primary.withAlpha(15),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: AppTheme.primary.withAlpha(60),
@@ -153,7 +153,7 @@ class _SocialAuthWidgetState extends State<SocialAuthWidget>
                         'Demo: tap "Continue with Google" to sign in',
                         style: GoogleFonts.manrope(
                           fontSize: 12,
-                          color: AppTheme.primary,
+                          color: AppTheme.primaryDark,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -169,8 +169,8 @@ class _SocialAuthWidgetState extends State<SocialAuthWidget>
                 iconWidget: _GoogleIcon(),
                 isLoading: _googleLoading,
                 onTap: _handleGoogleSignIn,
-                backgroundColor: Colors.white,
-                textColor: const Color(0xFF0D1B2A),
+                backgroundColor: AppTheme.primary,
+                textColor: Colors.white,
                 borderColor: Colors.transparent,
               ),
               const SizedBox(height: 12),
@@ -181,24 +181,21 @@ class _SocialAuthWidgetState extends State<SocialAuthWidget>
                 iconWidget: const Icon(
                   Icons.apple_rounded,
                   size: 22,
-                  color: Colors.white,
+                  color: Color(0xFF1A1A2E),
                 ),
                 isLoading: _appleLoading,
                 onTap: _handleAppleSignIn,
-                backgroundColor: Colors.white.withAlpha(15),
-                textColor: Colors.white,
-                borderColor: Colors.white.withAlpha(40),
+                backgroundColor: AppTheme.surfaceVariantLight,
+                textColor: const Color(0xFF1A1A2E),
+                borderColor: AppTheme.outlineLight,
               ),
               const SizedBox(height: 18),
 
-              // Divider with "or"
+              // Divider with text
               Row(
                 children: [
                   Expanded(
-                    child: Container(
-                      height: 1,
-                      color: Colors.white.withAlpha(20),
-                    ),
+                    child: Container(height: 1, color: AppTheme.outlineLight),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -206,17 +203,14 @@ class _SocialAuthWidgetState extends State<SocialAuthWidget>
                       'secure & private',
                       style: GoogleFonts.manrope(
                         fontSize: 11,
-                        color: Colors.white.withAlpha(80),
+                        color: const Color(0xFF94A3B8),
                         fontWeight: FontWeight.w500,
                         letterSpacing: 0.3,
                       ),
                     ),
                   ),
                   Expanded(
-                    child: Container(
-                      height: 1,
-                      color: Colors.white.withAlpha(20),
-                    ),
+                    child: Container(height: 1, color: AppTheme.outlineLight),
                   ),
                 ],
               ),
@@ -228,7 +222,7 @@ class _SocialAuthWidgetState extends State<SocialAuthWidget>
                 text: TextSpan(
                   style: GoogleFonts.manrope(
                     fontSize: 11,
-                    color: Colors.white.withAlpha(80),
+                    color: const Color(0xFF94A3B8),
                   ),
                   children: [
                     const TextSpan(text: 'By continuing, you agree to our '),
@@ -325,15 +319,13 @@ class _AuthButtonState extends State<_AuthButton>
             color: widget.backgroundColor,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: widget.borderColor, width: 1.5),
-            boxShadow: widget.backgroundColor == Colors.white
-                ? [
-                    BoxShadow(
-                      color: AppTheme.primary.withAlpha(30),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : null,
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primary.withAlpha(30),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: widget.isLoading
               ? Center(
@@ -390,7 +382,7 @@ class _GoogleLogoPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.2;
 
-    paint.color = const Color(0xFF4285F4);
+    paint.color = Colors.white.withAlpha(220);
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius - 1),
       -1.0,
@@ -398,7 +390,7 @@ class _GoogleLogoPainter extends CustomPainter {
       false,
       paint,
     );
-    paint.color = const Color(0xFFEA4335);
+    paint.color = Colors.white.withAlpha(180);
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius - 1),
       1.0,
@@ -406,7 +398,7 @@ class _GoogleLogoPainter extends CustomPainter {
       false,
       paint,
     );
-    paint.color = const Color(0xFFFBBC04);
+    paint.color = Colors.white.withAlpha(200);
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius - 1),
       2.5,
@@ -414,7 +406,7 @@ class _GoogleLogoPainter extends CustomPainter {
       false,
       paint,
     );
-    paint.color = const Color(0xFF34A853);
+    paint.color = Colors.white.withAlpha(210);
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius - 1),
       3.5,
@@ -425,7 +417,7 @@ class _GoogleLogoPainter extends CustomPainter {
 
     paint
       ..style = PaintingStyle.stroke
-      ..color = const Color(0xFF4285F4)
+      ..color = Colors.white.withAlpha(220)
       ..strokeWidth = 2.2;
     canvas.drawLine(
       Offset(center.dx, center.dy),

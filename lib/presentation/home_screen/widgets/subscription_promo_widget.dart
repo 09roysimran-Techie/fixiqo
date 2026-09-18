@@ -9,25 +9,20 @@ class SubscriptionPromoWidget extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(22),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF0F2A1E), Color(0xFF0A1F2E), Color(0xFF0D1829)],
-          stops: [0.0, 0.5, 1.0],
-        ),
+        color: Colors.white,
         border: Border.all(
-          color: const Color(0xFF00C896).withAlpha(50),
+          color: const Color(0xFF00C896).withAlpha(60),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF00C896).withAlpha(20),
-            blurRadius: 30,
+            color: const Color(0xFF00C896).withAlpha(18),
+            blurRadius: 24,
             offset: const Offset(0, 8),
           ),
           BoxShadow(
-            color: Colors.black.withAlpha(60),
-            blurRadius: 20,
+            color: Colors.black.withAlpha(10),
+            blurRadius: 16,
             offset: const Offset(0, 4),
           ),
         ],
@@ -45,7 +40,7 @@ class SubscriptionPromoWidget extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFF00C896).withAlpha(30),
+                    const Color(0xFF00C896).withAlpha(20),
                     Colors.transparent,
                   ],
                 ),
@@ -105,7 +100,7 @@ class SubscriptionPromoWidget extends StatelessWidget {
                             style: GoogleFonts.dmSans(
                               fontSize: 20,
                               fontWeight: FontWeight.w800,
-                              color: Colors.white,
+                              color: const Color(0xFF1A1A2E),
                               height: 1.2,
                               letterSpacing: -0.3,
                             ),
@@ -120,7 +115,7 @@ class SubscriptionPromoWidget extends StatelessWidget {
                         vertical: 10,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF00C896).withAlpha(20),
+                        color: const Color(0xFF00C896).withAlpha(15),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: const Color(0xFF00C896).withAlpha(60),
@@ -134,7 +129,7 @@ class SubscriptionPromoWidget extends StatelessWidget {
                             style: GoogleFonts.dmSans(
                               fontSize: 22,
                               fontWeight: FontWeight.w800,
-                              color: Colors.white,
+                              color: const Color(0xFF1A1A2E),
                               letterSpacing: -0.5,
                             ),
                           ),
@@ -142,7 +137,7 @@ class SubscriptionPromoWidget extends StatelessWidget {
                             '/month',
                             style: GoogleFonts.dmSans(
                               fontSize: 10,
-                              color: Colors.white.withAlpha(120),
+                              color: const Color(0xFF64748B),
                             ),
                           ),
                         ],
@@ -221,7 +216,7 @@ class SubscriptionPromoWidget extends StatelessWidget {
                     'No commitment · Cancel anytime',
                     style: GoogleFonts.dmSans(
                       fontSize: 11,
-                      color: Colors.white.withAlpha(80),
+                      color: const Color(0xFF94A3B8),
                     ),
                   ),
                 ),
@@ -245,9 +240,16 @@ class _FeaturePill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(8),
+        color: const Color(0xFFF1F5F9),
         borderRadius: BorderRadius.circular(100),
-        border: Border.all(color: Colors.white.withAlpha(18), width: 1),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(5),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -258,8 +260,8 @@ class _FeaturePill extends StatelessWidget {
             label,
             style: GoogleFonts.dmSans(
               fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: Colors.white.withAlpha(180),
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF334155),
             ),
           ),
         ],

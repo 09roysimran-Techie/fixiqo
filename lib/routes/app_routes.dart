@@ -16,6 +16,7 @@ import '../presentation/notifications_screen/notifications_screen.dart';
 import '../presentation/ai_diagnosis_screen/ai_diagnosis_screen.dart';
 import '../presentation/role_selection_screen/role_selection_screen.dart';
 import '../presentation/partner_dashboard_screen/partner_dashboard_screen.dart';
+import '../presentation/partner_navigation_screen/partner_navigation_screen.dart';
 
 class AppRoutes {
   static const String initial = '/';
@@ -34,6 +35,7 @@ class AppRoutes {
   static const String aiDiagnosisScreen = '/ai-diagnosis-screen';
   static const String roleSelectionScreen = '/role-selection-screen';
   static const String partnerDashboardScreen = '/partner-dashboard-screen';
+  static const String partnerNavigationScreen = '/partner-navigation-screen';
 }
 
 final GoRouter appRouter = GoRouter(
@@ -391,6 +393,38 @@ final GoRouter appRouter = GoRouter(
         },
         transitionDuration: const Duration(milliseconds: 280),
       ),
+    ),
+    GoRoute(
+      path: AppRoutes.partnerNavigationScreen,
+      pageBuilder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>? ?? {};
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: PartnerNavigationScreen(job: extra),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+              ),
+              child: SlideTransition(
+                position:
+                    Tween<Offset>(
+                      begin: const Offset(0, 0.04),
+                      end: Offset.zero,
+                    ).animate(
+                      CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeOutCubic,
+                      ),
+                    ),
+                child: child,
+              ),
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 280),
+        );
+      },
     ),
   ],
 );

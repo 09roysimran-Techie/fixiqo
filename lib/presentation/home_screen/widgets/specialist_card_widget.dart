@@ -53,18 +53,18 @@ class _SpecialistCardWidgetState extends State<SpecialistCardWidget>
         child: Container(
           width: 190,
           decoration: BoxDecoration(
-            color: const Color(0xFF0F1C2E),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: Colors.white.withAlpha(18), width: 1),
+            border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withAlpha(60),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
+                color: Colors.black.withAlpha(18),
+                blurRadius: 20,
+                offset: const Offset(0, 6),
               ),
               BoxShadow(
-                color: const Color(0xFF00C896).withAlpha(12),
-                blurRadius: 30,
+                color: const Color(0xFF00C896).withAlpha(10),
+                blurRadius: 24,
                 offset: const Offset(0, 0),
               ),
             ],
@@ -102,7 +102,7 @@ class _SpecialistCardWidgetState extends State<SpecialistCardWidget>
                                 end: Alignment.bottomCenter,
                                 colors: [
                                   Colors.transparent,
-                                  const Color(0xFF0F1C2E).withAlpha(200),
+                                  Colors.black.withAlpha(120),
                                 ],
                               ),
                             ),
@@ -200,7 +200,7 @@ class _SpecialistCardWidgetState extends State<SpecialistCardWidget>
                       style: GoogleFonts.dmSans(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: const Color(0xFF1A1A2E),
                         letterSpacing: -0.2,
                       ),
                       maxLines: 1,
@@ -223,7 +223,7 @@ class _SpecialistCardWidgetState extends State<SpecialistCardWidget>
                           style: GoogleFonts.dmSans(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: const Color(0xFF00C896).withAlpha(200),
+                            color: const Color(0xFF00C896),
                           ),
                         ),
                       ],
@@ -243,7 +243,7 @@ class _SpecialistCardWidgetState extends State<SpecialistCardWidget>
                           style: GoogleFonts.dmSans(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                            color: const Color(0xFF1A1A2E),
                           ),
                         ),
                         const SizedBox(width: 4),
@@ -251,28 +251,28 @@ class _SpecialistCardWidgetState extends State<SpecialistCardWidget>
                           '(${s['reviews']})',
                           style: GoogleFonts.dmSans(
                             fontSize: 11,
-                            color: Colors.white.withAlpha(90),
+                            color: const Color(0xFF64748B),
                           ),
                         ),
                         const Spacer(),
                         Icon(
                           Icons.location_on_rounded,
                           size: 11,
-                          color: Colors.white.withAlpha(80),
+                          color: const Color(0xFF94A3B8),
                         ),
                         const SizedBox(width: 2),
                         Text(
                           s['distance'] as String,
                           style: GoogleFonts.dmSans(
                             fontSize: 11,
-                            color: Colors.white.withAlpha(90),
+                            color: const Color(0xFF64748B),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
                     // Divider
-                    Container(height: 1, color: Colors.white.withAlpha(14)),
+                    Container(height: 1, color: const Color(0xFFE2E8F0)),
                     const SizedBox(height: 12),
                     // Price + Book
                     Row(
@@ -286,7 +286,7 @@ class _SpecialistCardWidgetState extends State<SpecialistCardWidget>
                               style: GoogleFonts.dmSans(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w800,
-                                color: Colors.white,
+                                color: const Color(0xFF1A1A2E),
                                 letterSpacing: -0.3,
                               ),
                             ),
@@ -294,7 +294,7 @@ class _SpecialistCardWidgetState extends State<SpecialistCardWidget>
                               'starting',
                               style: GoogleFonts.dmSans(
                                 fontSize: 9,
-                                color: Colors.white.withAlpha(80),
+                                color: const Color(0xFF94A3B8),
                               ),
                             ),
                           ],
@@ -317,9 +317,7 @@ class _SpecialistCardWidgetState extends State<SpecialistCardWidget>
                                       ],
                                     )
                                   : null,
-                              color: available
-                                  ? null
-                                  : Colors.white.withAlpha(14),
+                              color: available ? null : const Color(0xFFF1F5F9),
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: available
                                   ? [
@@ -340,7 +338,7 @@ class _SpecialistCardWidgetState extends State<SpecialistCardWidget>
                                 fontWeight: FontWeight.w700,
                                 color: available
                                     ? Colors.white
-                                    : Colors.white.withAlpha(70),
+                                    : const Color(0xFF94A3B8),
                               ),
                             ),
                           ),

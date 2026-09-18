@@ -57,7 +57,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1B2A),
+      backgroundColor: AppTheme.backgroundLight,
       body: Stack(
         children: [
           // Background gradient
@@ -67,9 +67,9 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFF0D1B2A),
-                  Color(0xFF0A2540),
-                  Color(0xFF071E35),
+                  Color(0xFFF0F9F6),
+                  Color(0xFFE8F5F1),
+                  Color(0xFFF5F7FA),
                 ],
                 stops: [0.0, 0.55, 1.0],
               ),
@@ -84,7 +84,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
               height: 260,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppTheme.primary.withAlpha(18),
+                color: AppTheme.primary.withAlpha(20),
               ),
             ),
           ),
@@ -96,7 +96,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withAlpha(8),
+                color: AppTheme.primary.withAlpha(10),
               ),
             ),
           ),
@@ -117,12 +117,19 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                         width: 64,
                         height: 64,
                         decoration: BoxDecoration(
-                          color: AppTheme.primary.withAlpha(25),
+                          color: AppTheme.primary.withAlpha(20),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             color: AppTheme.primary.withAlpha(80),
                             width: 1.5,
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.primary.withAlpha(30),
+                              blurRadius: 16,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                         child: const Icon(
                           Icons.home_repair_service_rounded,
@@ -136,7 +143,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                         style: GoogleFonts.manrope(
                           fontSize: 26,
                           fontWeight: FontWeight.w800,
-                          color: Colors.white,
+                          color: const Color(0xFF1A1A2E),
                           letterSpacing: -0.5,
                         ),
                       ),
@@ -147,7 +154,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                         style: GoogleFonts.manrope(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: Colors.white.withAlpha(160),
+                          color: const Color(0xFF64748B),
                           height: 1.5,
                         ),
                       ),
@@ -196,7 +203,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                         textAlign: TextAlign.center,
                         style: GoogleFonts.manrope(
                           fontSize: 12,
-                          color: Colors.white.withAlpha(80),
+                          color: const Color(0xFF94A3B8),
                         ),
                       ),
                     ],
@@ -277,17 +284,22 @@ class _RoleCardState extends State<_RoleCard>
           width: double.infinity,
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white.withAlpha(10),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: widget.accentColor.withAlpha(60),
+              color: widget.accentColor.withAlpha(40),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: widget.accentColor.withAlpha(30),
+                color: widget.accentColor.withAlpha(20),
                 blurRadius: 20,
                 offset: const Offset(0, 6),
+              ),
+              BoxShadow(
+                color: Colors.black.withAlpha(8),
+                blurRadius: 12,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
@@ -302,7 +314,7 @@ class _RoleCardState extends State<_RoleCard>
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: widget.accentColor.withAlpha(80),
+                      color: widget.accentColor.withAlpha(60),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -321,7 +333,7 @@ class _RoleCardState extends State<_RoleCard>
                       style: GoogleFonts.manrope(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: const Color(0xFF1A1A2E),
                         letterSpacing: -0.3,
                       ),
                     ),
@@ -330,7 +342,7 @@ class _RoleCardState extends State<_RoleCard>
                       widget.subtitle,
                       style: GoogleFonts.manrope(
                         fontSize: 12,
-                        color: Colors.white.withAlpha(150),
+                        color: const Color(0xFF64748B),
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -345,10 +357,10 @@ class _RoleCardState extends State<_RoleCard>
                                 vertical: 3,
                               ),
                               decoration: BoxDecoration(
-                                color: widget.accentColor.withAlpha(25),
+                                color: widget.accentColor.withAlpha(15),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: widget.accentColor.withAlpha(60),
+                                  color: widget.accentColor.withAlpha(50),
                                   width: 1,
                                 ),
                               ),

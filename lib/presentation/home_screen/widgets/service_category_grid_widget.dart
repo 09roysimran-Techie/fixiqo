@@ -193,14 +193,21 @@ class _CategoryCellState extends State<_CategoryCell>
           decoration: BoxDecoration(
             color: widget.isSelected
                 ? widget.accentColor.withAlpha(30)
-                : Colors.white.withAlpha(8),
+                : Colors.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: widget.isSelected
                   ? widget.accentColor.withAlpha(120)
-                  : Colors.white.withAlpha(16),
+                  : const Color(0xFFE2E8F0),
               width: 1,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(8),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -226,8 +233,8 @@ class _CategoryCellState extends State<_CategoryCell>
                       ? FontWeight.w700
                       : FontWeight.w500,
                   color: widget.isSelected
-                      ? Colors.white
-                      : Colors.white.withAlpha(150),
+                      ? widget.accentColor
+                      : const Color(0xFF334155),
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 1,

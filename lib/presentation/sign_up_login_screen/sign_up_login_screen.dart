@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../routes/app_routes.dart';
+import '../../theme/app_theme.dart';
 import './widgets/login_hero_widget.dart';
 import './widgets/social_auth_widget.dart';
 
@@ -14,7 +15,7 @@ class SignUpLoginScreen extends StatelessWidget {
     final isTablet = size.width >= 600;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1B2A),
+      backgroundColor: AppTheme.backgroundLight,
       body: isTablet ? _buildTabletLayout(context) : _buildPhoneLayout(context),
     );
   }

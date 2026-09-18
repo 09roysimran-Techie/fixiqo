@@ -32,7 +32,6 @@ class _HomeAppBarWidgetState extends State<HomeAppBarWidget> {
   void initState() {
     super.initState();
     _notificationService.addListener(_onNotificationsChanged);
-    // Start listening for demo homeowner
     _notificationService.startListening('demo-homeowner-001');
   }
 
@@ -56,12 +55,12 @@ class _HomeAppBarWidgetState extends State<HomeAppBarWidget> {
       decoration: BoxDecoration(
         color: Color.lerp(
           Colors.transparent,
-          const Color(0xFF080E1A).withAlpha(220),
+          Colors.white.withAlpha(230),
           blurAmount,
         ),
         border: Border(
           bottom: BorderSide(
-            color: Colors.white.withAlpha((blurAmount * 18).toInt()),
+            color: AppTheme.outlineLight.withAlpha((blurAmount * 200).toInt()),
             width: 1,
           ),
         ),
@@ -75,12 +74,12 @@ class _HomeAppBarWidgetState extends State<HomeAppBarWidget> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: const Color(0xFF00C896).withAlpha(160),
+                color: AppTheme.primary.withAlpha(160),
                 width: 2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF00C896).withAlpha(50),
+                  color: AppTheme.primary.withAlpha(40),
                   blurRadius: 10,
                   spreadRadius: 0,
                 ),
@@ -108,7 +107,7 @@ class _HomeAppBarWidgetState extends State<HomeAppBarWidget> {
                   style: GoogleFonts.dmSans(
                     fontSize: 11,
                     fontWeight: FontWeight.w400,
-                    color: Colors.white.withAlpha(120),
+                    color: const Color(0xFF64748B),
                   ),
                 ),
                 Text(
@@ -116,7 +115,7 @@ class _HomeAppBarWidgetState extends State<HomeAppBarWidget> {
                   style: GoogleFonts.dmSans(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: const Color(0xFF1A1A2E),
                     letterSpacing: -0.2,
                   ),
                 ),
@@ -128,9 +127,16 @@ class _HomeAppBarWidgetState extends State<HomeAppBarWidget> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.white.withAlpha(10),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(100),
-              border: Border.all(color: Colors.white.withAlpha(18), width: 1),
+              border: Border.all(color: AppTheme.outlineLight, width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(8),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -138,7 +144,7 @@ class _HomeAppBarWidgetState extends State<HomeAppBarWidget> {
                 Icon(
                   Icons.location_on_rounded,
                   size: 12,
-                  color: const Color(0xFF00C896),
+                  color: AppTheme.primary,
                 ),
                 const SizedBox(width: 4),
                 Text(
@@ -146,14 +152,14 @@ class _HomeAppBarWidgetState extends State<HomeAppBarWidget> {
                   style: GoogleFonts.dmSans(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white.withAlpha(200),
+                    color: const Color(0xFF1A1A2E),
                   ),
                 ),
                 const SizedBox(width: 3),
                 Icon(
                   Icons.keyboard_arrow_down_rounded,
                   size: 14,
-                  color: Colors.white.withAlpha(120),
+                  color: const Color(0xFF64748B),
                 ),
               ],
             ),
@@ -183,10 +189,7 @@ class _HomeAppBarWidgetState extends State<HomeAppBarWidget> {
                     decoration: BoxDecoration(
                       color: const Color(0xFFFF6B35),
                       borderRadius: BorderRadius.circular(100),
-                      border: Border.all(
-                        color: const Color(0xFF080E1A),
-                        width: 1.5,
-                      ),
+                      border: Border.all(color: Colors.white, width: 1.5),
                     ),
                     child: Text(
                       unreadCount > 9 ? '9+' : '$unreadCount',
@@ -209,10 +212,7 @@ class _HomeAppBarWidgetState extends State<HomeAppBarWidget> {
                     decoration: BoxDecoration(
                       color: const Color(0xFFFF6B35),
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: const Color(0xFF080E1A),
-                        width: 1.5,
-                      ),
+                      border: Border.all(color: Colors.white, width: 1.5),
                     ),
                   ),
                 ),
@@ -239,11 +239,18 @@ class _IconBtn extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: Colors.white.withAlpha(10),
+          color: Colors.white,
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.white.withAlpha(18), width: 1),
+          border: Border.all(color: AppTheme.outlineLight, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(8),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        child: Icon(icon, size: 19, color: Colors.white.withAlpha(200)),
+        child: Icon(icon, size: 19, color: const Color(0xFF1A1A2E)),
       ),
     );
   }
