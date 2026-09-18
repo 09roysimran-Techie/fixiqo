@@ -1086,6 +1086,13 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
         'color': const Color(0xFFFFB347),
       },
       {
+        'icon': Icons.receipt_long_rounded,
+        'label': 'Invoices & Receipts',
+        'subtitle': 'View completed job invoices',
+        'color': const Color(0xFF00C896),
+        'route': AppRoutes.invoicesReceiptsScreen,
+      },
+      {
         'icon': Icons.payment_outlined,
         'label': 'Payment Methods',
         'subtitle': '2 cards saved',
@@ -1186,6 +1193,8 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
                 InkWell(
                   onTap: isLast
                       ? () => context.go(AppRoutes.signUpLoginScreen)
+                      : opt.containsKey('route')
+                      ? () => context.push(opt['route'] as String)
                       : () {},
                   borderRadius: BorderRadius.circular(18),
                   child: Padding(

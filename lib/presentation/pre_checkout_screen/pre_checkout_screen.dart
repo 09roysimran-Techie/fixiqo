@@ -139,7 +139,7 @@ class _PreCheckoutScreenState extends State<PreCheckoutScreen>
 
     final base = widget.bookingData ?? {};
     context.push(
-      AppRoutes.paymentScreen,
+      AppRoutes.checkoutSummaryScreen,
       extra: {
         ...base,
         'address': fullAddress,

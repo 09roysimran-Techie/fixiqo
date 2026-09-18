@@ -89,7 +89,7 @@ class _AppNavigationState extends State<AppNavigation> {
       icon: Icons.bar_chart_outlined,
       activeIcon: Icons.bar_chart_rounded,
       label: 'Earnings',
-      branchIndex: null,
+      branchIndex: 2,
     ),
     _TabSpec(
       icon: Icons.chat_bubble_outline_rounded,
@@ -101,7 +101,7 @@ class _AppNavigationState extends State<AppNavigation> {
       icon: Icons.person_outline_rounded,
       activeIcon: Icons.person_rounded,
       label: 'Profile',
-      branchIndex: 2,
+      branchIndex: 3,
     ),
   ];
 
