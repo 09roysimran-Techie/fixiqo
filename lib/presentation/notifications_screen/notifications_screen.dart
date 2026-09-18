@@ -10,126 +10,330 @@ class NotificationsScreen extends StatefulWidget {
   State<NotificationsScreen> createState() => _NotificationsScreenState();
 }
 
-class _NotificationsScreenState extends State<NotificationsScreen> {
-  final NotificationService _notificationService = NotificationService.instance;
+class _NotificationsScreenState extends State<NotificationsScreen>
+    with SingleTickerProviderStateMixin {
+  final NotificationService _service = NotificationService.instance;
+  late TabController _tabController;
 
-  // Demo recipient ID for preview (in production, use auth.currentUser.id)
-  static const String _demoRecipientId = 'demo-homeowner-001';
+  final List<NotificationCategory> _categories = NotificationCategory.values;
 
   @override
   void initState() {
     super.initState();
-    _notificationService.addListener(_onNotificationsChanged);
-    if (!_notificationService.notifications.isNotEmpty) {
-      _notificationService.startListening(_demoRecipientId);
-    }
+    _tabController = TabController(length: _categories.length, vsync: this);
+    _service.addListener(_onChanged);
+    _service.startListening();
   }
 
-  void _onNotificationsChanged() {
+  void _onChanged() {
     if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
-    _notificationService.removeListener(_onNotificationsChanged);
+    _tabController.dispose();
+    _service.removeListener(_onChanged);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final notifications = _notificationService.notifications;
-    final unreadCount = _notificationService.unreadCount;
+    final totalUnread = _service.unreadCount;
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF1A1A2E),
-        title: Text(
-          'Notifications',
-          style: GoogleFonts.dmSans(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF1A1A2E),
+      appBar: _buildAppBar(totalUnread),
+      body: Column(
+        children: [
+          _buildTabBar(),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: _categories
+                  .map(
+                    (cat) =>
+                        _NotificationList(category: cat, service: _service),
+                  )
+                  .toList(),
+            ),
           ),
+        ],
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar(int totalUnread) {
+    return AppBar(
+      backgroundColor: Colors.white,
+      foregroundColor: AppTheme.secondary,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      leading: IconButton(
+        icon: const Icon(
+          Icons.arrow_back_ios_new_rounded,
+          size: 20,
+          color: AppTheme.secondary,
         ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            size: 20,
-            color: Color(0xFF1A1A2E),
+        onPressed: () => Navigator.of(context).pop(),
+      ),
+      title: Row(
+        children: [
+          Text(
+            'Notifications',
+            style: GoogleFonts.dmSans(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.secondary,
+            ),
           ),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        actions: [
-          if (unreadCount > 0)
-            TextButton(
-              onPressed: () =>
-                  _notificationService.markAllAsRead(_demoRecipientId),
+          if (totalUnread > 0) ...[
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF6B35),
+                borderRadius: BorderRadius.circular(100),
+              ),
               child: Text(
-                'Mark all read',
+                '$totalUnread',
                 style: GoogleFonts.dmSans(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.primary,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
                 ),
               ),
             ),
+          ],
         ],
-        elevation: 0,
       ),
-      body: notifications.isEmpty
-          ? _EmptyNotifications()
-          : ListView.separated(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              itemCount: notifications.length,
-              separatorBuilder: (_, __) => const Divider(
-                height: 1,
-                indent: 72,
-                endIndent: 20,
-                color: AppTheme.outlineLight,
+      actions: [
+        if (totalUnread > 0)
+          TextButton(
+            onPressed: () => _service.markAllAsRead(),
+            child: Text(
+              'Mark all read',
+              style: GoogleFonts.dmSans(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.primary,
               ),
-              itemBuilder: (context, index) {
-                final notification = notifications[index];
-                return _NotificationTile(
-                  notification: notification,
-                  onTap: () {
-                    if (!notification.isRead) {
-                      _notificationService.markAsRead(notification.id);
-                    }
-                  },
-                );
-              },
             ),
+          ),
+      ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(height: 1, color: AppTheme.outlineLight),
+      ),
+    );
+  }
+
+  Widget _buildTabBar() {
+    return Container(
+      color: Colors.white,
+      child: TabBar(
+        controller: _tabController,
+        isScrollable: true,
+        tabAlignment: TabAlignment.start,
+        labelColor: AppTheme.primary,
+        unselectedLabelColor: const Color(0xFF64748B),
+        indicatorColor: AppTheme.primary,
+        indicatorWeight: 2.5,
+        dividerColor: Colors.transparent,
+        labelStyle: GoogleFonts.dmSans(
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+        ),
+        unselectedLabelStyle: GoogleFonts.dmSans(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        tabs: _categories.map((cat) {
+          final unread = _service.unreadCountForCategory(cat);
+          return Tab(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(cat.label),
+                if (unread > 0) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withAlpha(30),
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Text(
+                      '$unread',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 }
 
-class _NotificationTile extends StatelessWidget {
-  final AppNotification notification;
-  final VoidCallback onTap;
+// ─── Notification List per Category ────────────────────────────────────────
 
-  const _NotificationTile({required this.notification, required this.onTap});
+class _NotificationList extends StatelessWidget {
+  final NotificationCategory category;
+  final NotificationService service;
+
+  const _NotificationList({required this.category, required this.service});
 
   @override
   Widget build(BuildContext context) {
+    final items = service.forCategory(category);
+
+    if (items.isEmpty) {
+      return _EmptyState(category: category);
+    }
+
+    // Group by date
+    final grouped = _groupByDate(items);
+
+    return ListView.builder(
+      padding: const EdgeInsets.only(bottom: 24),
+      itemCount: grouped.length,
+      itemBuilder: (context, index) {
+        final entry = grouped[index];
+        if (entry is String) {
+          // Date header
+          return _DateHeader(label: entry);
+        }
+        final notification = entry as AppNotification;
+        return _NotificationCard(
+          notification: notification,
+          onTap: () {
+            if (!notification.isRead) {
+              service.markAsRead(notification.id);
+            }
+          },
+        );
+      },
+    );
+  }
+
+  List<dynamic> _groupByDate(List<AppNotification> notifications) {
+    final result = <dynamic>[];
+    String? lastLabel;
+
+    for (final n in notifications) {
+      final label = _dateLabel(n.createdAt);
+      if (label != lastLabel) {
+        result.add(label);
+        lastLabel = label;
+      }
+      result.add(n);
+    }
+    return result;
+  }
+
+  String _dateLabel(DateTime dt) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final date = DateTime(dt.year, dt.month, dt.day);
+
+    if (date == today) return 'Today';
+    if (date == yesterday) return 'Yesterday';
+    return '${dt.day} ${_monthName(dt.month)} ${dt.year}';
+  }
+
+  String _monthName(int month) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return months[month - 1];
+  }
+}
+
+// ─── Date Header ────────────────────────────────────────────────────────────
+
+class _DateHeader extends StatelessWidget {
+  final String label;
+  const _DateHeader({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+      child: Text(
+        label,
+        style: GoogleFonts.dmSans(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: const Color(0xFF94A3B8),
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Notification Card ───────────────────────────────────────────────────────
+
+class _NotificationCard extends StatelessWidget {
+  final AppNotification notification;
+  final VoidCallback onTap;
+
+  const _NotificationCard({required this.notification, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final config = _NotificationConfig.forType(notification.notificationType);
+
     return InkWell(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         color: notification.isRead
             ? Colors.transparent
-            : AppTheme.primary.withAlpha(12),
+            : config.color.withAlpha(10),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _NotificationIcon(type: notification.notificationType),
+            // Icon bubble
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: config.color.withAlpha(22),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(config.icon, color: config.color, size: 22),
+            ),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
                         child: Text(
@@ -145,16 +349,15 @@ class _NotificationTile extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (!notification.isRead)
-                        Container(
-                          width: 8,
-                          height: 8,
-                          margin: const EdgeInsets.only(left: 8),
-                          decoration: const BoxDecoration(
-                            color: AppTheme.primary,
-                            shape: BoxShape.circle,
-                          ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _formatTime(notification.createdAt),
+                        style: GoogleFonts.dmSans(
+                          fontSize: 11,
+                          color: const Color(0xFF94A3B8),
+                          fontWeight: FontWeight.w500,
                         ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 4),
@@ -169,13 +372,39 @@ class _NotificationTile extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 6),
-                  Text(
-                    _formatTime(notification.createdAt),
-                    style: GoogleFonts.dmSans(
-                      fontSize: 11,
-                      color: const Color(0xFF94A3B8),
-                      fontWeight: FontWeight.w500,
-                    ),
+                  Row(
+                    children: [
+                      // Category chip
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: config.color.withAlpha(18),
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: Text(
+                          config.label,
+                          style: GoogleFonts.dmSans(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: config.color,
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      // Unread dot
+                      if (!notification.isRead)
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFFF6B35),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                    ],
                   ),
                 ],
               ),
@@ -193,106 +422,135 @@ class _NotificationTile extends StatelessWidget {
     if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
     if (diff.inHours < 24) return '${diff.inHours}h ago';
     if (diff.inDays < 7) return '${diff.inDays}d ago';
-    return '${dt.day}/${dt.month}/${dt.year}';
+    return '${dt.day}/${dt.month}';
   }
 }
 
-class _NotificationIcon extends StatelessWidget {
-  final String type;
+// ─── Notification Config ─────────────────────────────────────────────────────
 
-  const _NotificationIcon({required this.type});
+class _NotificationConfig {
+  final IconData icon;
+  final Color color;
+  final String label;
+
+  const _NotificationConfig({
+    required this.icon,
+    required this.color,
+    required this.label,
+  });
+
+  static _NotificationConfig forType(String type) {
+    switch (type) {
+      case NotificationType.newJobAlert:
+        return const _NotificationConfig(
+          icon: Icons.work_rounded,
+          color: Color(0xFF3B82F6),
+          label: 'Job Alert',
+        );
+      case NotificationType.jobAccepted:
+        return const _NotificationConfig(
+          icon: Icons.engineering_rounded,
+          color: Color(0xFF10B981),
+          label: 'Job Assigned',
+        );
+      case NotificationType.jobStarted:
+        return const _NotificationConfig(
+          icon: Icons.directions_run_rounded,
+          color: Color(0xFFF59E0B),
+          label: 'Job Started',
+        );
+      case NotificationType.jobCompleted:
+        return const _NotificationConfig(
+          icon: Icons.celebration_rounded,
+          color: Color(0xFF00C896),
+          label: 'Completed',
+        );
+      case NotificationType.jobCancelled:
+        return const _NotificationConfig(
+          icon: Icons.cancel_rounded,
+          color: Color(0xFFEF4444),
+          label: 'Cancelled',
+        );
+      case NotificationType.bookingConfirmed:
+        return const _NotificationConfig(
+          icon: Icons.bookmark_added_rounded,
+          color: Color(0xFF8B5CF6),
+          label: 'Booking',
+        );
+      case NotificationType.paymentReceived:
+        return const _NotificationConfig(
+          icon: Icons.payments_rounded,
+          color: Color(0xFF10B981),
+          label: 'Payment',
+        );
+      default:
+        return const _NotificationConfig(
+          icon: Icons.notifications_rounded,
+          color: Color(0xFF64748B),
+          label: 'Alert',
+        );
+    }
+  }
+}
+
+// ─── Empty State ─────────────────────────────────────────────────────────────
+
+class _EmptyState extends StatelessWidget {
+  final NotificationCategory category;
+  const _EmptyState({required this.category});
 
   @override
   Widget build(BuildContext context) {
+    String message;
     IconData icon;
-    Color color;
 
-    switch (type) {
-      case 'new_job_alert':
-        icon = Icons.work_rounded;
-        color = AppTheme.info;
+    switch (category) {
+      case NotificationCategory.bookingUpdates:
+        icon = Icons.bookmark_border_rounded;
+        message =
+            'No booking updates yet.\nYour booking activity will appear here.';
         break;
-      case 'job_accepted':
-        icon = Icons.check_circle_rounded;
-        color = AppTheme.success;
+      case NotificationCategory.jobAssignments:
+        icon = Icons.work_outline_rounded;
+        message = 'No job assignments yet.\nNew job alerts will appear here.';
         break;
-      case 'job_started':
-        icon = Icons.engineering_rounded;
-        color = AppTheme.warning;
-        break;
-      case 'job_completed':
-        icon = Icons.celebration_rounded;
-        color = AppTheme.primary;
-        break;
-      case 'job_cancelled':
-        icon = Icons.cancel_rounded;
-        color = AppTheme.error;
-        break;
-      case 'booking_confirmed':
-        icon = Icons.bookmark_added_rounded;
-        color = AppTheme.primary;
-        break;
-      case 'payment_received':
-        icon = Icons.payments_rounded;
-        color = AppTheme.success;
+      case NotificationCategory.alerts:
+        icon = Icons.notifications_none_rounded;
+        message = 'No alerts at the moment.\nSystem alerts will appear here.';
         break;
       default:
-        icon = Icons.notifications_rounded;
-        color = AppTheme.secondary;
+        icon = Icons.notifications_none_rounded;
+        message =
+            'No notifications yet.\nWe\'ll notify you when something happens.';
     }
 
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: color.withAlpha(25),
-        shape: BoxShape.circle,
-      ),
-      child: Icon(icon, color: color, size: 22),
-    );
-  }
-}
-
-class _EmptyNotifications extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppTheme.primary.withAlpha(20),
-              shape: BoxShape.circle,
+      child: Padding(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AppTheme.primary.withAlpha(20),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 38, color: AppTheme.primary),
             ),
-            child: const Icon(
-              Icons.notifications_none_rounded,
-              size: 40,
-              color: AppTheme.primary,
+            const SizedBox(height: 20),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.dmSans(
+                fontSize: 14,
+                color: const Color(0xFF94A3B8),
+                height: 1.6,
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'No notifications yet',
-            style: GoogleFonts.dmSans(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.secondary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Job alerts and booking updates\nwill appear here in real-time.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.dmSans(
-              fontSize: 13,
-              color: const Color(0xFF64748B),
-              height: 1.5,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

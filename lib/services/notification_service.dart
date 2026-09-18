@@ -67,6 +67,43 @@ class NotificationType {
   static const String jobCancelled = 'job_cancelled';
   static const String bookingConfirmed = 'booking_confirmed';
   static const String paymentReceived = 'payment_received';
+
+  /// Returns the category for a given notification type
+  static NotificationCategory categoryFor(String type) {
+    switch (type) {
+      case bookingConfirmed:
+      case jobCompleted:
+      case jobCancelled:
+      case paymentReceived:
+        return NotificationCategory.bookingUpdates;
+      case newJobAlert:
+      case jobAccepted:
+      case jobStarted:
+        return NotificationCategory.jobAssignments;
+      default:
+        return NotificationCategory.alerts;
+    }
+  }
+}
+
+enum NotificationCategory {
+  all,
+  bookingUpdates,
+  jobAssignments,
+  alerts;
+
+  String get label {
+    switch (this) {
+      case all:
+        return 'All';
+      case bookingUpdates:
+        return 'Bookings';
+      case jobAssignments:
+        return 'Jobs';
+      case alerts:
+        return 'Alerts';
+    }
+  }
 }
 
 /// Service for managing real-time notifications via Supabase
@@ -80,24 +117,55 @@ class NotificationService extends ChangeNotifier {
   final List<AppNotification> _notifications = [];
   RealtimeChannel? _channel;
   bool _isListening = false;
+  String? _currentRecipientId;
 
   List<AppNotification> get notifications => List.unmodifiable(_notifications);
 
   int get unreadCount => _notifications.where((n) => !n.isRead).length;
 
+  /// Returns notifications filtered by category
+  List<AppNotification> forCategory(NotificationCategory category) {
+    if (category == NotificationCategory.all) return notifications;
+    return _notifications
+        .where(
+          (n) => NotificationType.categoryFor(n.notificationType) == category,
+        )
+        .toList();
+  }
+
+  /// Unread count for a specific category
+  int unreadCountForCategory(NotificationCategory category) {
+    return forCategory(category).where((n) => !n.isRead).length;
+  }
+
   SupabaseClient get _client => SupabaseService.instance.client;
 
-  /// Start listening for real-time notifications for a given recipient
-  void startListening(String recipientId) {
-    if (_isListening) return;
+  /// Returns the current user's ID or falls back to demo ID
+  String get _effectiveRecipientId {
+    final user = _client.auth.currentUser;
+    return user?.id ?? 'demo-homeowner-001';
+  }
+
+  /// Start listening for real-time notifications for a given recipient.
+  /// If [recipientId] is null, uses the authenticated user or demo ID.
+  void startListening([String? recipientId]) {
+    final id = recipientId ?? _effectiveRecipientId;
+
+    // If already listening for the same recipient, skip
+    if (_isListening && _currentRecipientId == id) return;
+
+    // Stop previous subscription if switching recipient
+    if (_isListening) stopListening();
+
     _isListening = true;
+    _currentRecipientId = id;
 
     // Load existing notifications first
-    _loadNotifications(recipientId);
+    _loadNotifications(id);
 
-    // Subscribe to real-time inserts
+    // Subscribe to real-time inserts and updates
     _channel = _client
-        .channel('notifications:$recipientId')
+        .channel('notifications:$id')
         .onPostgresChanges(
           event: PostgresChangeEvent.insert,
           schema: 'public',
@@ -105,14 +173,40 @@ class NotificationService extends ChangeNotifier {
           filter: PostgresChangeFilter(
             type: PostgresChangeFilterType.eq,
             column: 'recipient_id',
-            value: recipientId,
+            value: id,
           ),
           callback: (payload) {
             final newRecord = payload.newRecord;
             if (newRecord.isNotEmpty) {
               final notification = AppNotification.fromJson(newRecord);
-              _notifications.insert(0, notification);
-              notifyListeners();
+              // Avoid duplicates
+              if (!_notifications.any((n) => n.id == notification.id)) {
+                _notifications.insert(0, notification);
+                notifyListeners();
+              }
+            }
+          },
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'notifications',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'recipient_id',
+            value: id,
+          ),
+          callback: (payload) {
+            final updated = payload.newRecord;
+            if (updated.isNotEmpty) {
+              final updatedNotif = AppNotification.fromJson(updated);
+              final index = _notifications.indexWhere(
+                (n) => n.id == updatedNotif.id,
+              );
+              if (index != -1) {
+                _notifications[index] = updatedNotif;
+                notifyListeners();
+              }
             }
           },
         )
@@ -127,7 +221,7 @@ class NotificationService extends ChangeNotifier {
           .select()
           .eq('recipient_id', recipientId)
           .order('created_at', ascending: false)
-          .limit(50);
+          .limit(100);
 
       _notifications.clear();
       for (final item in response as List) {
@@ -138,42 +232,124 @@ class NotificationService extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint('NotificationService: Failed to load notifications: $e');
+      // Seed demo notifications for preview
+      _seedDemoNotifications();
     }
+  }
+
+  void _seedDemoNotifications() {
+    final now = DateTime.now();
+    _notifications.addAll([
+      AppNotification(
+        id: 'demo-1',
+        recipientId: 'demo-homeowner-001',
+        notificationType: NotificationType.bookingConfirmed,
+        title: '✅ Booking Confirmed!',
+        body: 'Your AC Repair booking has been confirmed for today at 3:00 PM.',
+        data: {'booking_id': 'bk-001', 'service': 'AC Repair'},
+        isRead: false,
+        createdAt: now.subtract(const Duration(minutes: 5)),
+      ),
+      AppNotification(
+        id: 'demo-2',
+        recipientId: 'demo-homeowner-001',
+        notificationType: NotificationType.jobAccepted,
+        title: '🔧 Technician Assigned!',
+        body: 'Rajesh Kumar has accepted your Plumbing booking.',
+        data: {
+          'booking_id': 'bk-002',
+          'technician_name': 'Rajesh Kumar',
+          'service': 'Plumbing',
+        },
+        isRead: false,
+        createdAt: now.subtract(const Duration(minutes: 22)),
+      ),
+      AppNotification(
+        id: 'demo-3',
+        recipientId: 'demo-homeowner-001',
+        notificationType: NotificationType.newJobAlert,
+        title: '🔔 New Job Alert!',
+        body: 'Electrical Wiring job at Andheri West — ₹1,200',
+        data: {
+          'booking_id': 'bk-003',
+          'service': 'Electrical Wiring',
+          'amount': 1200,
+        },
+        isRead: true,
+        createdAt: now.subtract(const Duration(hours: 1)),
+      ),
+      AppNotification(
+        id: 'demo-4',
+        recipientId: 'demo-homeowner-001',
+        notificationType: NotificationType.jobCompleted,
+        title: '🎉 Job Completed!',
+        body: 'Your Washing Machine Repair has been completed successfully.',
+        data: {'booking_id': 'bk-004', 'service': 'Washing Machine Repair'},
+        isRead: true,
+        createdAt: now.subtract(const Duration(hours: 3)),
+      ),
+      AppNotification(
+        id: 'demo-5',
+        recipientId: 'demo-homeowner-001',
+        notificationType: NotificationType.paymentReceived,
+        title: '💳 Payment Received',
+        body: 'Payment of ₹850 received for Plumbing service.',
+        data: {'booking_id': 'bk-005', 'amount': 850},
+        isRead: true,
+        createdAt: now.subtract(const Duration(days: 1)),
+      ),
+      AppNotification(
+        id: 'demo-6',
+        recipientId: 'demo-homeowner-001',
+        notificationType: NotificationType.jobStarted,
+        title: '🚗 Technician On The Way!',
+        body: 'Amit Sharma is heading to your location for Carpenter service.',
+        data: {
+          'booking_id': 'bk-006',
+          'technician_name': 'Amit Sharma',
+          'service': 'Carpenter',
+        },
+        isRead: true,
+        createdAt: now.subtract(const Duration(days: 2)),
+      ),
+    ]);
+    notifyListeners();
   }
 
   /// Mark a notification as read
   Future<void> markAsRead(String notificationId) async {
+    // Optimistic update
+    final index = _notifications.indexWhere((n) => n.id == notificationId);
+    if (index != -1 && !_notifications[index].isRead) {
+      _notifications[index] = _notifications[index].copyWith(isRead: true);
+      notifyListeners();
+    }
     try {
       await _client
           .from('notifications')
           .update({'is_read': true})
           .eq('id', notificationId);
-
-      final index = _notifications.indexWhere((n) => n.id == notificationId);
-      if (index != -1) {
-        _notifications[index] = _notifications[index].copyWith(isRead: true);
-        notifyListeners();
-      }
     } catch (e) {
       debugPrint('NotificationService: Failed to mark as read: $e');
     }
   }
 
   /// Mark all notifications as read
-  Future<void> markAllAsRead(String recipientId) async {
+  Future<void> markAllAsRead([String? recipientId]) async {
+    final id = recipientId ?? _currentRecipientId ?? _effectiveRecipientId;
+    // Optimistic update
+    for (int i = 0; i < _notifications.length; i++) {
+      if (!_notifications[i].isRead) {
+        _notifications[i] = _notifications[i].copyWith(isRead: true);
+      }
+    }
+    notifyListeners();
     try {
       await _client
           .from('notifications')
           .update({'is_read': true})
-          .eq('recipient_id', recipientId)
+          .eq('recipient_id', id)
           .eq('is_read', false);
-
-      for (int i = 0; i < _notifications.length; i++) {
-        if (!_notifications[i].isRead) {
-          _notifications[i] = _notifications[i].copyWith(isRead: true);
-        }
-      }
-      notifyListeners();
     } catch (e) {
       debugPrint('NotificationService: Failed to mark all as read: $e');
     }
@@ -303,6 +479,7 @@ class NotificationService extends ChangeNotifier {
     _channel?.unsubscribe();
     _channel = null;
     _isListening = false;
+    _currentRecipientId = null;
   }
 
   /// Clear all local notifications
