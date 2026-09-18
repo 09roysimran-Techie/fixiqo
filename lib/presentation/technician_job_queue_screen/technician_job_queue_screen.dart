@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/app_theme.dart';
 import '../../services/notification_service.dart';
+import '../../services/technician_job_service.dart';
 import './widgets/job_queue_card_widget.dart';
 import './widgets/active_job_map_widget.dart';
 import '../job_detail_screen/job_detail_screen.dart';
@@ -20,77 +22,162 @@ class _TechnicianJobQueueScreenState extends State<TechnicianJobQueueScreen>
   bool _isOnline = true;
   Map<String, dynamic>? _activeJob;
 
+  // Supabase data
+  List<TechnicianJob> _pendingJobs = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+  RealtimeChannel? _realtimeChannel;
+
+  String get _currentPartnerId {
+    final user = Supabase.instance.client.auth.currentUser;
+    return user?.id ?? 'demo-technician-001';
+  }
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    // Start listening for new job notifications for this technician
-    NotificationService.instance.startListening('demo-technician-001');
+    NotificationService.instance.startListening(_currentPartnerId);
+    _loadPendingJobs();
+    _subscribeToNewJobs();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _realtimeChannel?.unsubscribe();
     super.dispose();
   }
 
-  void _acceptJob(Map<String, dynamic> job) {
+  Future<void> _loadPendingJobs() async {
+    if (!mounted) return;
     setState(() {
-      _activeJob = job;
-      _pendingJobs.removeWhere((j) => j['id'] == job['id']);
-      _expandedJobIndex = -1;
-      _tabController.animateTo(0);
+      _isLoading = true;
+      _errorMessage = null;
     });
-
-    // Notify homeowner that technician accepted
-    NotificationService.instance.notifyHomeownerStatusUpdate(
-      homeownerId: 'demo-homeowner-001',
-      status: 'accepted',
-      service: job['service'] as String? ?? 'Home Service',
-      bookingId: job['id'] as String? ?? '',
-      technicianName: 'Arjun Mehta',
-    );
-
-    _showSnackBar(
-      'Job accepted! Navigate to customer location.',
-      AppTheme.success,
-    );
+    try {
+      final jobs = await TechnicianJobService.instance.fetchPendingJobs();
+      if (mounted) {
+        setState(() {
+          _pendingJobs = jobs;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Failed to load jobs. Pull to refresh.';
+          _isLoading = false;
+        });
+      }
+    }
   }
 
-  void _rejectJob(Map<String, dynamic> job) {
-    setState(() {
-      _pendingJobs.removeWhere((j) => j['id'] == job['id']);
-      _expandedJobIndex = -1;
+  void _subscribeToNewJobs() {
+    _realtimeChannel = TechnicianJobService.instance.subscribeToNewJobs((
+      newJob,
+    ) {
+      if (mounted) {
+        setState(() {
+          // Avoid duplicates
+          final exists = _pendingJobs.any((j) => j.id == newJob.id);
+          if (!exists) {
+            _pendingJobs.insert(0, newJob);
+          }
+        });
+        _showSnackBar(
+          '🔔 New job: ${newJob.service} — ${newJob.urgency}',
+          AppTheme.primary,
+        );
+      }
     });
-    _showSnackBar('Job declined.', AppTheme.warning);
   }
 
-  void _completeJob() {
+  Future<void> _acceptJob(TechnicianJob job) async {
+    final success = await TechnicianJobService.instance.acceptJob(
+      job.id,
+      _currentPartnerId,
+    );
+
+    if (!mounted) return;
+
+    if (success) {
+      setState(() {
+        _activeJob = job.toJobMap();
+        _pendingJobs.removeWhere((j) => j.id == job.id);
+        _expandedJobIndex = -1;
+        _tabController.animateTo(0);
+      });
+
+      NotificationService.instance.notifyHomeownerStatusUpdate(
+        homeownerId: job.id,
+        status: 'accepted',
+        service: job.service,
+        bookingId: job.bookingRef,
+        technicianName: 'Arjun Mehta',
+      );
+
+      _showSnackBar(
+        'Job accepted! Navigate to customer location.',
+        AppTheme.success,
+      );
+    } else {
+      _showSnackBar('Could not accept job. Please try again.', AppTheme.error);
+    }
+  }
+
+  Future<void> _rejectJob(TechnicianJob job) async {
+    final success = await TechnicianJobService.instance.declineJob(job.id);
+
+    if (!mounted) return;
+
+    if (success) {
+      setState(() {
+        _pendingJobs.removeWhere((j) => j.id == job.id);
+        _expandedJobIndex = -1;
+      });
+      _showSnackBar('Job declined.', AppTheme.warning);
+    } else {
+      // Remove locally even if DB update fails for UX
+      setState(() {
+        _pendingJobs.removeWhere((j) => j.id == job.id);
+        _expandedJobIndex = -1;
+      });
+      _showSnackBar('Job declined.', AppTheme.warning);
+    }
+  }
+
+  Future<void> _completeJob() async {
     final completedJob = _activeJob;
+    if (completedJob == null) return;
+
+    final bookingId = completedJob['id'] as String? ?? '';
+    if (bookingId.isNotEmpty) {
+      await TechnicianJobService.instance.completeJob(bookingId);
+    }
+
+    if (!mounted) return;
     setState(() {
       _activeJob = null;
     });
 
-    // Notify homeowner that job is completed
-    if (completedJob != null) {
-      NotificationService.instance.notifyHomeownerStatusUpdate(
-        homeownerId: 'demo-homeowner-001',
-        status: 'completed',
-        service: completedJob['service'] as String? ?? 'Home Service',
-        bookingId: completedJob['id'] as String? ?? '',
-        technicianName: 'Arjun Mehta',
-      );
-    }
+    NotificationService.instance.notifyHomeownerStatusUpdate(
+      homeownerId: 'demo-homeowner-001',
+      status: 'completed',
+      service: completedJob['service'] as String? ?? 'Home Service',
+      bookingId: bookingId,
+      technicianName: 'Arjun Mehta',
+    );
 
     _showSnackBar('Job marked complete! Great work! 🎉', AppTheme.primary);
   }
 
-  void _openJobDetail(Map<String, dynamic> job) {
+  void _openJobDetail(TechnicianJob job) {
     Navigator.of(context).push(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
             JobDetailScreen(
-              job: job,
+              job: job.toJobMap(),
               onAccept: () => _acceptJob(job),
               onDecline: () => _rejectJob(job),
             ),
@@ -381,9 +468,7 @@ class _TechnicianJobQueueScreenState extends State<TechnicianJobQueueScreen>
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  // Active Job Tab
                   _buildActiveJobTab(theme, bottomPadding),
-                  // Queue Tab
                   _buildQueueTab(theme, bottomPadding),
                 ],
               ),
@@ -527,6 +612,71 @@ class _TechnicianJobQueueScreenState extends State<TechnicianJobQueueScreen>
       );
     }
 
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: AppTheme.error.withAlpha(20),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.cloud_off_rounded,
+                  size: 36,
+                  color: AppTheme.error,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Connection Error',
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  color: AppTheme.secondary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _errorMessage!,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: const Color(0xFF64748B),
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: _loadPendingJobs,
+                icon: const Icon(Icons.refresh_rounded, size: 16),
+                label: const Text('Retry'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 14,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     if (_pendingJobs.isEmpty) {
       return Center(
         child: Padding(
@@ -564,25 +714,51 @@ class _TechnicianJobQueueScreenState extends State<TechnicianJobQueueScreen>
                 ),
                 textAlign: TextAlign.center,
               ),
+              const SizedBox(height: 24),
+              OutlinedButton.icon(
+                onPressed: _loadPendingJobs,
+                icon: const Icon(Icons.refresh_rounded, size: 16),
+                label: const Text('Refresh'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppTheme.primary,
+                  side: const BorderSide(color: AppTheme.primary),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 14,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
       );
     }
 
-    return ListView.builder(
-      padding: EdgeInsets.fromLTRB(16, 16, 16, 24 + bottomPadding),
-      itemCount: _pendingJobs.length,
-      itemBuilder: (context, i) {
-        final job = _pendingJobs[i];
-        return JobQueueCardWidget(
-          job: job,
-          isExpanded: _expandedJobIndex == i,
-          onTap: () => _openJobDetail(job),
-          onAccept: () => _acceptJob(job),
-          onReject: () => _rejectJob(job),
-        );
-      },
+    return RefreshIndicator(
+      onRefresh: _loadPendingJobs,
+      color: AppTheme.primary,
+      child: ListView.builder(
+        padding: EdgeInsets.fromLTRB(16, 16, 16, 24 + bottomPadding),
+        itemCount: _pendingJobs.length,
+        itemBuilder: (context, i) {
+          final job = _pendingJobs[i];
+          final jobMap = job.toJobMap();
+          return JobQueueCardWidget(
+            job: jobMap,
+            isExpanded: _expandedJobIndex == i,
+            onTap: () {
+              setState(() {
+                _expandedJobIndex = _expandedJobIndex == i ? -1 : i;
+              });
+            },
+            onAccept: () => _acceptJob(job),
+            onReject: () => _rejectJob(job),
+          );
+        },
+      ),
     );
   }
 
@@ -628,55 +804,3 @@ class _TechnicianJobQueueScreenState extends State<TechnicianJobQueueScreen>
     );
   }
 }
-
-// Mock pending jobs data
-final List<Map<String, dynamic>> _pendingJobs = [
-  {
-    'id': 'j001',
-    'service': 'Plumbing',
-    'urgency': 'Emergency',
-    'address': '14B, Koramangala 5th Block, Bengaluru',
-    'price': 599,
-    'distance': '1.4 km',
-    'eta': '8 min',
-    'customerName': 'Sneha Kapoor',
-    'customerAvatar':
-        'https://img.rocket.new/generatedImages/rocket_gen_img_1f4db8602-1773376239768.png',
-    'customerRating': 5,
-    'description':
-        'Burst pipe under kitchen sink causing flooding. Water needs to be shut off and pipe replaced urgently.',
-    'statusStep': 0,
-  },
-  {
-    'id': 'j002',
-    'service': 'AC Repair',
-    'urgency': 'Urgent',
-    'address': '22, Indiranagar 100ft Road, Bengaluru',
-    'price': 799,
-    'distance': '3.2 km',
-    'eta': '18 min',
-    'customerName': 'Rohit Verma',
-    'customerAvatar':
-        'https://img.rocket.new/generatedImages/rocket_gen_img_13cc43308-1772128417658.png',
-    'customerRating': 4,
-    'description':
-        'AC unit not cooling. Compressor making loud noise. 1.5 ton split AC, 3 years old.',
-    'statusStep': 0,
-  },
-  {
-    'id': 'j003',
-    'service': 'Electrical',
-    'urgency': 'Standard',
-    'address': '7, HSR Layout Sector 2, Bengaluru',
-    'price': 449,
-    'distance': '5.1 km',
-    'eta': '25 min',
-    'customerName': 'Anita Desai',
-    'customerAvatar':
-        'https://img.rocket.new/generatedImages/rocket_gen_img_1b16f61fa-1778946866659.png',
-    'customerRating': 4,
-    'description':
-        'Main circuit breaker keeps tripping. Multiple power outlets not working in living room.',
-    'statusStep': 0,
-  },
-];

@@ -745,8 +745,16 @@ class _AiDiagnosisBanner extends StatelessWidget {
                       'AI Instant Diagnosis',
                       style: GoogleFonts.dmSans(
                         fontSize: 15,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w800,
                         color: Colors.white,
+                        letterSpacing: 0.1,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withAlpha(40),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -754,7 +762,8 @@ class _AiDiagnosisBanner extends StatelessWidget {
                       'Describe your issue → get price estimate',
                       style: GoogleFonts.dmSans(
                         fontSize: 12,
-                        color: Colors.white.withAlpha(200),
+                        color: Colors.white.withAlpha(230),
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
