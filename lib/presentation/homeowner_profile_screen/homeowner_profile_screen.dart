@@ -68,19 +68,20 @@ class _HomeownerProfileScreenState extends State<HomeownerProfileScreen>
   final List<Map<String, dynamic>> _savedAddresses = [
     {
       'label': 'Home',
-      'address': 'Flat 4B, Sunrise Apartments, Andheri West, Mumbai 400058',
+      'address': 'Flat 4B, Sunrise Apartments, Indiranagar, Bangalore 560038',
       'icon': Icons.home_rounded,
       'isPrimary': true,
     },
     {
       'label': 'Office',
-      'address': 'WeWork, BKC, Bandra Kurla Complex, Mumbai 400051',
+      'address':
+          'WeWork, Embassy Tech Village, Outer Ring Road, Bangalore 560103',
       'icon': Icons.business_rounded,
       'isPrimary': false,
     },
     {
       'label': "Parents' Home",
-      'address': '12, Shanti Nagar, Borivali East, Mumbai 400066',
+      'address': '12, Shanti Nagar, Jayanagar, Bangalore 560041',
       'icon': Icons.cottage_rounded,
       'isPrimary': false,
     },

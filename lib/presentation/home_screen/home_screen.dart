@@ -197,7 +197,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 opacity: _fadeIn,
                 child: HomeAppBarWidget(
                   greeting: _getGreeting(),
-                  userName: 'Marcus',
+                  userName: 'Arjun Mehta',
                   avatarUrl:
                       'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg',
                   onSearchTap: () {},

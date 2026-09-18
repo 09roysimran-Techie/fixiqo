@@ -9,6 +9,7 @@ import './widgets/tracking_action_buttons_widget.dart';
 import './widgets/tracking_map_widget.dart';
 import '../../services/job_status_service.dart';
 import '../../services/location_service.dart';
+import '../../routes/app_routes.dart';
 
 class LiveTrackingScreen extends StatefulWidget {
   const LiveTrackingScreen({super.key});
@@ -354,7 +355,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                                       as Map<String, dynamic>)['phone']
                                   as String,
                           onCall: () {},
-                          onChat: () {},
+                          onChat: () => _openChat(context),
                         ),
                         const SizedBox(height: 16),
                         JobStatusTimelineWidget(
@@ -458,7 +459,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                                   as Map<String, dynamic>)['phone']
                               as String,
                       onCall: () {},
-                      onChat: () {},
+                      onChat: () => _openChat(context),
                     ),
                     const SizedBox(height: 16),
                     JobStatusTimelineWidget(
@@ -473,6 +474,20 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
           ),
         ),
       ],
+    );
+  }
+
+  void _openChat(BuildContext context) {
+    context.push(
+      AppRoutes.jobChatScreen,
+      extra: {
+        'jobId': _jobId,
+        'service': _booking['service'],
+        'technician': _booking['technician'],
+        'customerId': 'customer_demo',
+        'customerName': 'You',
+        'senderRole': 'customer',
+      },
     );
   }
 }

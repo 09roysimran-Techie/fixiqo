@@ -128,19 +128,12 @@ class SubscriptionPromoWidget extends StatelessWidget {
                       child: Column(
                         children: [
                           Text(
-                            '₹999',
+                            '₹999/year',
                             style: GoogleFonts.dmSans(
                               fontSize: 22,
                               fontWeight: FontWeight.w800,
                               color: const Color(0xFF1A1A2E),
                               letterSpacing: -0.5,
-                            ),
-                          ),
-                          Text(
-                            '/month',
-                            style: GoogleFonts.dmSans(
-                              fontSize: 10,
-                              color: const Color(0xFF64748B),
                             ),
                           ),
                         ],

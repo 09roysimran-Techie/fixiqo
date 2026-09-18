@@ -18,6 +18,7 @@ import '../presentation/role_selection_screen/role_selection_screen.dart';
 import '../presentation/partner_dashboard_screen/partner_dashboard_screen.dart';
 import '../presentation/partner_navigation_screen/partner_navigation_screen.dart';
 import '../presentation/subscription_plan_screen/subscription_plan_screen.dart';
+import '../presentation/job_chat_screen/job_chat_screen.dart';
 
 class AppRoutes {
   static const String initial = '/';
@@ -38,6 +39,7 @@ class AppRoutes {
   static const String partnerDashboardScreen = '/partner-dashboard-screen';
   static const String partnerNavigationScreen = '/partner-navigation-screen';
   static const String subscriptionPlanScreen = '/subscription-plan-screen';
+  static const String jobChatScreen = '/job-chat-screen';
 }
 
 final GoRouter appRouter = GoRouter(
@@ -456,6 +458,38 @@ final GoRouter appRouter = GoRouter(
         },
         transitionDuration: const Duration(milliseconds: 280),
       ),
+    ),
+    GoRoute(
+      path: AppRoutes.jobChatScreen,
+      pageBuilder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: JobChatScreen(chatData: extra),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+              ),
+              child: SlideTransition(
+                position:
+                    Tween<Offset>(
+                      begin: const Offset(0, 0.04),
+                      end: Offset.zero,
+                    ).animate(
+                      CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeOutCubic,
+                      ),
+                    ),
+                child: child,
+              ),
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 280),
+        );
+      },
     ),
   ],
 );
